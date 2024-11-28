@@ -19,17 +19,50 @@ typedef struct { const char *p; ptrdiff_t n; } _GoString_;
 /* Start of preamble from import "C" comments.  */
 
 
-#line 3 "errors.go"
+#line 12 "block_client.go"
+ #include <client.h>
 
- #include <events_query_client.h>
+#line 1 "cgo-generated-wrapper"
+
+#line 3 "block_query_client.go"
+
+ #include <client.h>
+ #include <stdint.h>
+ #include <errno.h>
+
+#line 1 "cgo-generated-wrapper"
+
+#line 3 "depinject.go"
+ #include <client.h>
+
+#line 1 "cgo-generated-wrapper"
+
+#line 6 "errors.go"
+
+ #include <client.h>
 
 #line 1 "cgo-generated-wrapper"
 
 #line 3 "events_query_client.go"
 
- #include <events_query_client.h>
+ #include <client.h>
  #include <stdint.h>
  #include <errno.h>
+
+#line 1 "cgo-generated-wrapper"
+
+#line 3 "memory.go"
+ #include <client.h>
+
+#line 1 "cgo-generated-wrapper"
+
+#line 3 "tx_client.go"
+ #include <client.h>
+
+#line 1 "cgo-generated-wrapper"
+
+#line 3 "tx_context.go"
+ #include <client.h>
 
 #line 1 "cgo-generated-wrapper"
 
@@ -87,9 +120,37 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
+extern GoRef NewBlockClient(GoRef depsRef, char** cErr);
+extern GoRef NewBlockQueryClient(char* cometWebsocketURL, char** cErr);
+extern GoRef BlockQueryClientBlock(GoRef clientRef, int64_t* cHeight, char** cErr);
+extern GoRef Supply(GoRef goRef, char** cErr);
+extern GoRef SupplyMany(GoRef* goRefs, int numGoRefs, char** cErr);
+extern GoRef Config(GoRef* goRefs, int numGoRefs, char** cErr);
 extern GoString GetErrMessage(GoInt code);
-extern int64_t NewEventsQueryClient(char* cometWebsocketURLCString);
-extern int64_t EventsQueryClientEventsBytes(GoInt64 clientID, char* query, char** cErr);
+extern GoRef NewEventsQueryClient(char* cometWebsocketURLCString);
+extern GoRef EventsQueryClientEventsBytes(GoRef clientRef, char* query, char** cErr);
+
+// TODO_IN_THIS_COMMIT: godoc...
+//
+extern void FreeGoMem(GoRef ref);
+
+// TODO_IN_THIS_COMMIT: godoc...
+// TODO_IN_THIS_COMMIT: add seperate constructor which supports options...
+//
+extern GoRef NewTxClient(GoRef depsRef, char* signingKeyName, char** cErr);
+extern GoRef WithSigningKeyName(char* keyName);
+
+// TODO_IN_THIS_COMMIT: godoc...
+// TODO_IMPROVE: support multiple msgs (if top-level JSON array).
+// TODO_IMPROVE: support (in a seperate method) proto msg bytes.
+//
+extern GoRef SignAndBroadcast(GoRef txClientRef, char* msgAnyJSON, char** cErr);
+
+// TODO_IN_THIS_COMMIT: godoc...
+// TODO_IN_THIS_COMMIT: add seperate constructor which supports deps...
+// func NewTxContext(depsRef C.GoRef, cErr **C.char) C.GoRef {
+//
+extern GoRef NewTxContext(char* tcpURL, char** cErr);
 
 #ifdef __cplusplus
 }
