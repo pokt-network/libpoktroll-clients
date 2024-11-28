@@ -127,7 +127,7 @@ static void test_tx_context(void) {
     // DEV_NOTE: using calloc to ensure the error is an empty string if no error occurred.
     char *err = calloc(1024, sizeof(char));
 
-    const GoRef txCtxRef = NewTxContext("tcp:127.0.0.1:26657", &err);
+    const GoRef txCtxRef = NewTxContext("tcp://127.0.0.1:26657", &err);
 
     FreeGoMem(txCtxRef);
     free(err);
