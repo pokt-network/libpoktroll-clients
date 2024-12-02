@@ -1,13 +1,15 @@
-#ifndef STRUCTS_H
-#define STRUCTS_H
+#ifndef CLIENT_H
+#define CLIENT_H
 
 #include <stdint.h>
 
-typedef int64_t GoRef;
+//typedef struct {
+//  BlockID block_id;
+//  Block *Block;
+//} BlockResult;
 
-enum ErrorCode {
-    EVENTS_BYTES_SYNC_ERROR,
-    EVENTS_BYTES_ASYNC_ERROR,
-};
+typedef void *(callback_fn)(void *data, char **err);
+
+typedef int64_t go_ref;
 
 #endif
