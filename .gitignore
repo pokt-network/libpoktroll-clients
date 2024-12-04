@@ -16,3 +16,6 @@ Testing/
 
 liblibpoktroll_clients.so
 libpoktroll_clients_tests
+
+# Generated files
+gen/
