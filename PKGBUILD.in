@@ -1,0 +1,27 @@
+# Maintainer: Bryan White <bryanchriswhite@gmail.com>
+
+pkgname=@PROJECT_NAME@
+pkgver=@PROJECT_VERSION@
+pkgrel=1
+pkgdesc="@CPACK_PACKAGE_DESCRIPTION_SUMMARY@"
+arch=('x86_64')
+url="https://github.com/pokt-network/libpoktroll_clients"
+license=('MIT')  # Adjust as needed
+depends=('protobuf-c' 'go')
+makedepends=('cmake' 'protobuf')
+source=("$pkgname-$pkgver-Linux.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+    cd "$srcdir/$pkgname-$pkgver-Linux"
+
+    # Install headers
+    install -Dm644 include/poktroll/context.h "$pkgdir/usr/include/poktroll/context.h"
+
+    # Install libraries
+    install -Dm755 lib/libclients "$pkgdir/usr/lib/libclients"
+    install -Dm755 lib/liblibpoktroll_clients.a "$pkgdir/usr/lib/liblibpoktroll_clients.a"
+
+    # Install pkg-config file
+    install -Dm644 lib/pkgconfig/libpoktroll_clients.pc "$pkgdir/usr/lib/pkgconfig/libpoktroll_clients.pc"
+}
