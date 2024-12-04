@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "libclients.h"
+#include "libpoktroll_clients.h"
 #include "context.h"
 #include "unity.h"
 #include "poktroll/application/tx.pb-c.h"

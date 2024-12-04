@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(Protobuf REQUIRED)
 
 # Define paths
-set(CLIENTS_SHARED_LIB ${CMAKE_SOURCE_DIR}/cgo/build/libclients)
+set(CLIENTS_SHARED_LIB ${CMAKE_SOURCE_DIR}/cgo/build/libpoktroll_clients)
 set(LIBPOKTROLL_CLIENTS_SRC ${CMAKE_SOURCE_DIR}/src/context.c)
 set(LIBPOKTROLL_CLIENTS_TESTS ${CMAKE_SOURCE_DIR}/tests/test_main.c)
 set(UNITY_DIR ${CMAKE_SOURCE_DIR}/libs/unity/src)
@@ -50,11 +50,11 @@ add_custom_target(build_go_shared_lib
 )
 
 # Add main library
-add_library(libpoktroll_clients ${LIBPOKTROLL_CLIENTS_SRC} ${PROTO_SOURCES})
-add_dependencies(libpoktroll_clients build_go_shared_lib)
+add_library(poktroll_clients ${LIBPOKTROLL_CLIENTS_SRC} ${PROTO_SOURCES})
+add_dependencies(poktroll_clients build_go_shared_lib)
 
 # Set library properties for versioning
-set_target_properties(libpoktroll_clients PROPERTIES
+set_target_properties(poktroll_clients PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}
         PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/include/context.h"
@@ -96,7 +96,7 @@ include(GNUInstallDirs)
 # Include CPack AFTER configuration. 👆
 include(CPack)
 
-install(TARGETS libpoktroll_clients
+install(TARGETS poktroll_clients
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/poktroll
         COMPONENT library
@@ -123,8 +123,14 @@ set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "POKT Network Client Library")
 set(CPACK_PACKAGE_VENDOR "POKT Network")
-set(CPACK_PACKAGE_CONTACT "your@email.com")  # TODO: Update this
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")  # If you have a LICENSE file
+
+# TODO_RELEASE: update package contact and maintainer.
+
+# Set the maintainer contact information (required for Debian packages)
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Bryan White <bryanchriswhite@gmail.com>")
+set(CPACK_PACKAGE_CONTACT "bryanchriswhite@gmail.com")
+
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 
 # Enable multiple package formats
 set(CPACK_GENERATOR "TGZ;DEB;RPM")
