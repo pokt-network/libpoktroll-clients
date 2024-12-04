@@ -18,13 +18,31 @@ make
 # Run tests (requires [running poktroll localnet](https://dev.poktroll.com/develop/developer_guide/quickstart#1-launch--inspect-localnet)).
 ctest --output-on-failure
 
-# Build tar/deb/rpm install packages.
-cpack  # Produces:
+# Build deb/rpm/tar install packages.
+cpack         # All
+cpack -G DEB  # Debian
+cpack -G RPM  # RHEL/CentOS
+cpack -G TGZ  # tar.gz
+# Produces:
 #  - build/libpoktroll_clients-<version>-Linux.tar.gz
 #  - build/libpoktroll_clients-<version>_.deb
 #  - build/libpoktroll_clients-<version>_amd64.deb
 #  - build/libpoktroll_clients-<version>.x86_64.rpm
 
-# Build arch install package.
-make pkgbuild  # Produces: build/pkg/*
+# Build arch install package (depends on TGZ from cpack).
+make pkgbuild
+# Produces:
+#  - build/PKGBUILD
+#  - build/pkg/*
+
+# Install the shared library and headers.
+
+## Arch
+sudo pacman -U ./pkg/libpoktroll_clients-0.1.0-1-x86_64.pkg.tar.zst   
+
+## Debian
+sudo dpkg -i ./pkg/libpoktroll_clients-0.1.0-Linux.deb
+
+## RHEL/CentOS
+sudo rpm -i ./pkg/libpoktroll_clients-0.1.0-Linux.rpm
 ```
