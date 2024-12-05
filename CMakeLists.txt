@@ -122,9 +122,6 @@ install(FILES ${CMAKE_BINARY_DIR}/libpoktroll_clients.pc
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 )
 
-# Include CPack
-include(CPack)
-
 # CPack configuration
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
@@ -149,6 +146,9 @@ set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)  # Use standardized naming
 set(CPACK_RPM_PACKAGE_REQUIRES "protobuf-c-devel")
 set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
 set(CPACK_RPM_FILE_NAME RPM-DEFAULT)  # Use standardized naming
+
+# Include CPack
+include(CPack)
 
 # Create pkg directory
 add_custom_command(
