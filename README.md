@@ -19,19 +19,24 @@ make
 ctest --output-on-failure
 
 # Build deb/rpm/tar install packages.
-cpack         # All
-cpack -G DEB  # Debian
-cpack -G RPM  # RHEL/CentOS
-cpack -G TGZ  # tar.gz
-# Produces:
+make package  # ALL
+
+## Produces:
 #  - build/libpoktroll_clients-<version>-Linux.tar.gz
 #  - build/libpoktroll_clients-<version>_.deb
 #  - build/libpoktroll_clients-<version>_amd64.deb
 #  - build/libpoktroll_clients-<version>.x86_64.rpm
 
+## OR
+cpack         # All
+cpack -G DEB  # Debian
+cpack -G RPM  # RHEL/CentOS
+cpack -G TGZ  # tar.gz
+
 # Build arch install package (depends on TGZ from cpack).
 make pkgbuild
-# Produces:
+
+## Produces:
 #  - build/PKGBUILD
 #  - build/pkg/*
 
