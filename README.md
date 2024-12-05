@@ -7,6 +7,12 @@ This repo contains an asynchronous C API to the [Poktroll client packages](https
 git clone https://github.com/bryanchriswhite/libpoktroll_clients.git
 cd libpoktroll_clients
 
+# (optional) Update protobufs ("pull" from buf.build)
+buf export buf.build/pokt-network/poktroll
+
+# Generate protobufs
+buf generate
+
 # Make and cd to cmake build directory.
 mkdir build
 cd build
