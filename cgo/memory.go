@@ -7,7 +7,12 @@ package main
 import "C"
 import "fmt"
 
-const NilGoRef = GoRef(-1)
+const (
+	// TODO_IN_THIS_COMMIT: godoc...
+	NilGoRef = GoRef(-1)
+	// TODO_IN_THIS_COMMIT: godoc...
+	ZeroGoRef = GoRef(0)
+)
 
 var (
 	goMemoryMap  = map[GoRef]any{}

@@ -23,14 +23,11 @@ import "C"
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 	"unsafe"
 
 	bankv1beta1 "cosmossdk.io/api/cosmos/bank/v1beta1"
 	"cosmossdk.io/math"
-	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/pokt-network/poktroll/api/poktroll/application"
 	"github.com/pokt-network/poktroll/pkg/client/tx"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -39,15 +36,9 @@ import (
 	cosmostypes "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	cosmosproto "github.com/cosmos/gogoproto/proto"
-	"github.com/gogo/protobuf/proto"
 	"github.com/pokt-network/poktroll/pkg/client"
 	apptypes "github.com/pokt-network/poktroll/x/application/types"
 	sharedtypes "github.com/pokt-network/poktroll/x/shared/types"
-)
-
-var (
-	interfaceRegistry = codectypes.NewInterfaceRegistry()
-	cdc               = codec.NewProtoCodec(interfaceRegistry)
 )
 
 // TODO_IN_THIS_COMMIT: godoc...
@@ -64,23 +55,8 @@ func NewTxClient(depsRef C.go_ref, signingKeyName *C.char, cErr **C.char) C.go_r
 		return C.go_ref(NilGoRef)
 	}
 
-	//txCtxRef, err := NewTxContext(tcpURL, cErr)
-	//if err != nil {
-	//	*cErr = C.CString(err.Error())
-	//	return 0
-	//}
-	//
-	//txCtx, err := GetGoMem[client.TxContext](txCtxRef)
-	//if err != nil {
-	//	*cErr = C.CString(err.Error())
-	//	return 0
-	//}
-	//
-	//cfg := depinject.Supply(txCtx)
-
-	keyOpt := tx.WithSigningKeyName(C.GoString(signingKeyName))
-
-	txClient, err := tx.NewTxClient(ctx, deps, keyOpt)
+	signingKeyOpt := tx.WithSigningKeyName(C.GoString(signingKeyName))
+	txClient, err := tx.NewTxClient(ctx, deps, signingKeyOpt)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return C.go_ref(NilGoRef)
@@ -135,25 +111,11 @@ func TxClient_SignAndBroadcastAny(
 	return C.go_ref(SetGoMem(errCh))
 }
 
-// TODO_IN_THIS_COMMIT: move & godoc...
-func init() {
-	// TODO_IN_THIS_COMMIT: design a consise way to register all message types.
-	// TODO_CONSIDERATION: expose a method to add message types just in case.
-	for _, msg := range []cosmosproto.Message{
-		new(apptypes.MsgStakeApplication),
-		new(apptypes.MsgUnstakeApplication),
-	} {
-		msgTypeUrl := cosmostypes.MsgTypeURL(msg)
-		trimmedMsgTypeUrl := strings.Trim(msgTypeUrl, "/")
-		proto.RegisterType(msg, trimmedMsgTypeUrl)
-	}
-}
-
 //export TxClient_SignAndBroadcast
 func TxClient_SignAndBroadcast(
 	op *C.AsyncOperation,
 	txClientRef C.go_ref,
-	typeUrl *C.char,
+	cTypeUrl *C.char,
 	msgBz *C.uchar,
 	msgBzLen C.int,
 ) C.go_ref {
@@ -162,26 +124,36 @@ func TxClient_SignAndBroadcast(
 	txClient, err := GetGoMem[client.TxClient](GoRef(txClientRef))
 	if err != nil {
 		C.bridge_error(op, C.CString(err.Error()))
-		return C.go_ref(NilGoRef)
+		return C.go_ref(ZeroGoRef)
 	}
 
-	msgType := proto.MessageType(C.GoString(typeUrl))
-	if msgType == nil {
-		C.bridge_error(op, C.CString(fmt.Sprintf("unknown message type: %s", string(C.GoString(typeUrl)))))
-		return C.go_ref(NilGoRef)
+	typeUrl := C.GoString(cTypeUrl)
+	if !strings.HasPrefix(typeUrl, "/") {
+		typeUrl = "/" + typeUrl
 	}
 
-	msg := reflect.New(msgType.Elem()).Interface().(cosmosproto.Message)
+	msg, err := interfaceRegistry.Resolve(typeUrl)
+	if err != nil {
+		C.bridge_error(op, C.CString(err.Error()))
+		return C.go_ref(ZeroGoRef)
+	}
+	//msgType := gogoproto.MessageType(C.GoString(typeUrl))
+	//if msgType == nil {
+	//	C.bridge_error(op, C.CString(fmt.Sprintf("unknown message type: %s", string(C.GoString(typeUrl)))))
+	//	return C.go_ref(NilGoRef)
+	//}
+
+	//msg := reflect.New(msgType.Elem()).Interface().(cosmosproto.Message)
 	if err = cdc.Unmarshal(C.GoBytes(unsafe.Pointer(msgBz), msgBzLen), msg); err != nil {
 		C.bridge_error(op, C.CString(err.Error()))
-		return C.go_ref(NilGoRef)
+		return C.go_ref(ZeroGoRef)
 	}
 
 	eitherAsyncErr := txClient.SignAndBroadcast(goCtx, msg)
 	err, errCh := eitherAsyncErr.SyncOrAsyncError()
 	if err != nil {
 		C.bridge_error(op, C.CString(err.Error()))
-		return C.go_ref(NilGoRef)
+		return C.go_ref(ZeroGoRef)
 	}
 
 	go func() {
