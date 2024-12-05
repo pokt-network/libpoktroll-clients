@@ -34,10 +34,10 @@ file(GLOB_RECURSE GO_SOURCES
 
 # Create a command that only executes when sources change
 add_custom_command(
-        OUTPUT ${CLIENTS_SHARED_LIB}
+        OUTPUT ${CLIENTS_SHARED_LIB}.so
         COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/cgo
         /bin/sh -c "if [ ! -f go.mod ]; then go mod init libpoktroll/clients; fi && \
-                       go build -o ${CLIENTS_SHARED_LIB} -buildmode=c-shared ."
+                   go build -o ${CLIENTS_SHARED_LIB}.so -buildmode=c-shared ."
         DEPENDS ${GO_SOURCES}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMENT "Building Go shared library..."
@@ -46,18 +46,20 @@ add_custom_command(
 
 # Add custom target that depends on the output
 add_custom_target(build_go_shared_lib
-        DEPENDS ${CLIENTS_SHARED_LIB}
+        DEPENDS ${CLIENTS_SHARED_LIB}.so
 )
 
-# Add main library
-add_library(poktroll_clients ${LIBPOKTROLL_CLIENTS_SRC} ${PROTO_SOURCES})
+# Add main library - make it SHARED explicitly
+add_library(poktroll_clients SHARED ${LIBPOKTROLL_CLIENTS_SRC} ${PROTO_SOURCES})
 add_dependencies(poktroll_clients build_go_shared_lib)
 
-# Set library properties for versioning
+# Set library properties for versioning and naming
 set_target_properties(poktroll_clients PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}
         PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/include/context.h"
+        OUTPUT_NAME "poktroll_clients"
+        PREFIX "lib"
 )
 
 # Add your test executable
@@ -73,7 +75,7 @@ target_compile_options(libpoktroll_clients_tests PRIVATE -g)
 # Link the test executable with your library and the Poktroll shared object
 target_link_libraries(libpoktroll_clients_tests
         PRIVATE
-        ${CLIENTS_SHARED_LIB}    # Path to the shared object clients.so
+        ${CLIENTS_SHARED_LIB}.so    # Updated path to the shared object
         ${Protobuf_LIBRARIES}
         protobuf-c              # Add protobuf-c library
 )
@@ -93,18 +95,20 @@ add_test(NAME LibPoktrollTests COMMAND libpoktroll_clients_tests)
 # Installation configuration
 include(GNUInstallDirs)
 
-# Include CPack AFTER configuration. 👆
-include(CPack)
-
+# Install targets with proper naming and symlinks
 install(TARGETS poktroll_clients
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/poktroll
+        LIBRARY
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        NAMELINK_SKIP
+        PUBLIC_HEADER
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/poktroll
         COMPONENT library
 )
 
-# Install the Go shared library
-install(FILES ${CLIENTS_SHARED_LIB}
+# Install the Go shared library with proper naming
+install(FILES ${CLIENTS_SHARED_LIB}.so
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RENAME libpoktroll_clients.so.${PROJECT_VERSION}
         COMPONENT library
 )
 
@@ -118,17 +122,18 @@ install(FILES ${CMAKE_BINARY_DIR}/libpoktroll_clients.pc
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 )
 
+# Include CPack
+include(CPack)
+
 # CPack configuration
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "POKT Network Client Library")
 set(CPACK_PACKAGE_VENDOR "POKT Network")
 
-# TODO_RELEASE: update package contact and maintainer.
-
 # Set the maintainer contact information (required for Debian packages)
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Bryan White <bryanchriswhite@gmail.com>")
-set(CPACK_PACKAGE_CONTACT "bryanchriswhite@gmail.com")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Bryan White <bryanchriswhite+libpoktroll_clients@gmail.com>")
+set(CPACK_PACKAGE_CONTACT "bryanchriswhite+libpoktroll_clients@gmail.com")
 
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 
