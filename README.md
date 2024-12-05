@@ -21,23 +21,24 @@ cd build
 cmake ..
 make
 
-# Run tests (requires [running poktroll localnet](https://dev.poktroll.com/develop/developer_guide/quickstart#1-launch--inspect-localnet)).
+# Run tests (requires running poktroll localnet.
+# (see: https://dev.poktroll.com/develop/developer_guide/quickstart#1-launch--inspect-localnet)
 ctest --output-on-failure
 
 # Build deb/rpm/tar install packages.
 make package  # ALL
 
 ## Produces:
-#  - build/libpoktroll_clients-<version>-Linux.tar.gz
-#  - build/libpoktroll_clients-<version>_.deb
+#  - build/libpoktroll_clients-<version>-Linux.{sh,tar.gz,tar.Z}
+#  - build/libpoktroll_clients-<version>.deb
 #  - build/libpoktroll_clients-<version>_amd64.deb
 #  - build/libpoktroll_clients-<version>.x86_64.rpm
 
 ## OR
-cpack         # All
-cpack -G DEB  # Debian
-cpack -G RPM  # RHEL/CentOS
-cpack -G TGZ  # tar.gz
+cpack -G "TGZ;DEB;RPM"  # All
+cpack -G DEB            # Debian
+cpack -G RPMi           # RHEL/CentOS
+cpack -G TGZ            # tar.gz
 
 # Build arch install package (depends on TGZ from cpack).
 make pkgbuild
