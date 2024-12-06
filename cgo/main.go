@@ -3,6 +3,9 @@ package main
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/authz"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	appmodule "github.com/pokt-network/poktroll/x/application/module"
 	gatewaymodule "github.com/pokt-network/poktroll/x/gateway/module"
 	proofmodule "github.com/pokt-network/poktroll/x/proof/module"
@@ -36,6 +39,19 @@ func init() {
 
 // TODO_IN_THIS_COMMIT: godoc...
 func registerAllModuleInterfaces() {
+	registerCosmosModuleInterfaces()
+	registerPoktrollModuleInterfaces()
+}
+
+// TODO_IN_THIS_COMMIT: godoc...
+func registerCosmosModuleInterfaces() {
+	banktypes.RegisterInterfaces(interfaceRegistry)
+	authtypes.RegisterInterfaces(interfaceRegistry)
+	authz.RegisterInterfaces(interfaceRegistry)
+}
+
+// TODO_IN_THIS_COMMIT: godoc...
+func registerPoktrollModuleInterfaces() {
 	appmodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
 	gatewaymodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
 	proofmodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
