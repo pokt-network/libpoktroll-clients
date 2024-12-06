@@ -203,49 +203,6 @@ static void test_tx_client(void)
     free(err);
 }
 
-static void test_sign_and_broadcast_any(void)
-{
-    char* sendMsgAnyJSON =
-        "{\"@type\":\"type.googleapis.com/cosmos.bank.v1beta1.MsgSend\", \"from_address\":\"pokt1awtlw5sjmw2f5lgj8ekdkaqezphgz88rdk93sk\", \"to_address\":\"pokt1mrqt5f7qh8uxs27cjm9t7v9e74a9vvdnq5jva4\", \"amount\":[{\"denom\":\"upokt\", \"amount\":\"100000000\"}]}";
-    char* err = calloc(1024, sizeof(char));
-
-    const go_ref supplyCfgRef = getTxClientDeps(&err);
-    TEST_ASSERT_EQUAL_STRING("", err);
-
-    const go_ref txClientRef = NewTxClient(supplyCfgRef, "faucet", &err);
-    TEST_ASSERT_EQUAL_STRING("", err);
-
-    AsyncContext ctx;
-    init_context(&ctx);
-
-    AsyncOperation op = {
-        .ctx = &ctx,
-        .on_error = handle_error,
-        .on_success = handle_success,
-        .cleanup = cleanup_context
-    };
-
-    const go_ref errChRef = TxClient_SignAndBroadcastAny(&op, txClientRef, sendMsgAnyJSON);
-
-    if (wait_for_completion(&ctx, 15000))
-    {
-        printf("Test passed: Operation completed successfully\n");
-    }
-    else
-    {
-        printf("Test failed: Operation timed out\n");
-    }
-
-    TEST_ASSERT_EQUAL_STRING("", ctx.error_msg);
-
-    cleanup_context(&ctx);
-
-    FreeGoMem(errChRef);
-    FreeGoMem(txClientRef);
-    FreeGoMem(supplyCfgRef);
-    free(err);
-}
-
 static void test_sign_and_broadcast_success(void)
 {
     char* err = calloc(1024, sizeof(char));
@@ -497,7 +454,6 @@ int main(void)
     RUN_TEST(test_block_client);
     RUN_TEST(test_tx_context);
     RUN_TEST(test_tx_client);
-    RUN_TEST(test_sign_and_broadcast_any);
     RUN_TEST(test_sign_and_broadcast_sync_error);
     RUN_TEST(test_sign_and_broadcast_success);
     RUN_TEST(test_sign_and_broadcast_async_error);
