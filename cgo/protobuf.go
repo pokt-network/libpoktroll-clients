@@ -1,6 +1,9 @@
 package main
 
-// #include <client.h>
+/*
+#include <memory.h>
+#include <protobuf.h>
+*/
 import "C"
 import (
 	"fmt"
@@ -11,31 +14,8 @@ import (
 )
 
 type SerializedProto struct {
-	TypeUrl string
+	TypeUrl []byte
 	Data    []byte
-}
-
-// CProtoMessageArrayToBytes converts a C proto_message_array into a [][]byte slice.
-func CProtoMessageArrayToBytes(cArray *C.proto_message_array) [][]byte {
-	if cArray == nil || cArray.messages == nil {
-		return nil
-	}
-
-	// Create slice of byte slices.
-	msgsBz := make([][]byte, cArray.num_messages)
-
-	// Convert messages array to a byte slice.
-	msgBz := (*[1 << 30]*C.serialized_proto)(unsafe.Pointer(cArray.messages))[:cArray.num_messages:cArray.num_messages]
-
-	// Convert each message to []byte
-	for i := uint64(0); i < uint64(cArray.num_messages); i++ {
-		msg := msgBz[i]
-		if msg != nil && msg.data != nil {
-			msgsBz[i] = C.GoBytes(unsafe.Pointer(msg.data), C.int(msg.length))
-		}
-	}
-
-	return msgsBz
 }
 
 // CProtoMessageArrayToGoProtoMessages converts a C proto_message_array into a []proto.Message slice.
@@ -45,24 +25,28 @@ func CProtoMessageArrayToGoProtoMessages(cArray *C.proto_message_array) (msgs []
 	}
 
 	// Convert C.serialized_protos array to slice.
-	cSerializedProtos := GoSliceFromCArray[C.serialized_proto, C.serialized_proto](cArray.messages, int(cArray.num_messages))
+	cSerializedProtos := GoSliceFromCArray[C.serialized_proto](cArray.messages, int(cArray.num_messages))
 
 	// Convert each message to SerializedProto struct.
 	for _, cSerializedProto := range cSerializedProtos {
-		if cSerializedProto != nil &&
-			cSerializedProto.data != nil {
-			serializedProto := &SerializedProto{
-				TypeUrl: C.GoString(cSerializedProto.type_url),
-				Data:    C.GoBytes(unsafe.Pointer(cSerializedProto.data), C.int(cSerializedProto.length)),
-			}
+		//fmt.Printf(">>> msg.type_url: %s\n", C.GoBytes(unsafe.Pointer(cSerializedProto.type_url), C.int(cSerializedProto.type_url_length)))
+		//fmt.Printf(">>> msg.type_url: %x\n", C.GoBytes(unsafe.Pointer(cSerializedProto.type_url), C.int(cSerializedProto.type_url_length)))
+		//fmt.Printf(">>> msg.data: %s\n", C.GoBytes(unsafe.Pointer(cSerializedProto.data), C.int(cSerializedProto.data_length)))
+		//fmt.Printf(">>> msg.type_url_length: %d\n", cSerializedProto.type_url_length)
+		//typeUrlBytes := C.GoBytes(unsafe.Pointer(cSerializedProto.type_url), C.int(cSerializedProto.type_url_length))
+		//fmt.Printf(">>> actual bytes read: %d\n", len(typeUrlBytes))
 
-			msg, err := SerializedProtoToProtoMessage(serializedProto)
-			if err != nil {
-				return nil, err
-			}
-
-			msgs = append(msgs, msg)
+		serializedProto := &SerializedProto{
+			TypeUrl: C.GoBytes(unsafe.Pointer(cSerializedProto.type_url), C.int(cSerializedProto.type_url_length)),
+			Data:    C.GoBytes(unsafe.Pointer(cSerializedProto.data), C.int(cSerializedProto.data_length)),
 		}
+
+		msg, err := SerializedProtoToProtoMessage(serializedProto)
+		if err != nil {
+			return nil, err
+		}
+
+		msgs = append(msgs, msg)
 	}
 
 	return msgs, nil
@@ -70,9 +54,12 @@ func CProtoMessageArrayToGoProtoMessages(cArray *C.proto_message_array) (msgs []
 
 // TODO_IN_THIS_COMMIT: move & godoc...
 func SerializedProtoToProtoMessage(serializedProto *SerializedProto) (proto.Message, error) {
-	typeUrl := serializedProto.TypeUrl
+	typeUrl := string(serializedProto.TypeUrl)
 	if !strings.HasPrefix(typeUrl, "/") {
 		typeUrl = "/" + typeUrl
+	}
+	if strings.HasSuffix(typeUrl, string([]byte{0x00})) {
+		typeUrl = typeUrl[:len(typeUrl)-1]
 	}
 
 	msg, err := interfaceRegistry.Resolve(typeUrl)
@@ -87,9 +74,16 @@ func SerializedProtoToProtoMessage(serializedProto *SerializedProto) (proto.Mess
 	return msg, nil
 }
 
-// TODO_IN_THIS_COMMIT: move & godoc...
-// DEV_NOTE: ONLY USE WITH C TYPES (generic type arguments).
-func GoSliceFromCArray[D, S any](cArrayPtr *S, cArrayLen int) []*D {
-	// TODO_IN_THIS_COMMIT: add a  DEV_NOTE.
-	return (*[1 << 30]*D)(unsafe.Pointer(cArrayPtr))[:cArrayLen:cArrayLen]
+// GoSliceFromCArray converts a C array pointer and length into a Go slice.
+// Warning: The caller must ensure the C array remains valid for the lifetime of the returned slice.
+func GoSliceFromCArray[T any](cArrayPtr *T, cArrayLen int) []T {
+	if cArrayLen < 0 {
+		panic("negative length in GoSliceFromCArray")
+	}
+	if cArrayPtr == nil && cArrayLen > 0 {
+		panic("nil pointer with non-zero length in GoSliceFromCArray")
+	}
+
+	// Convert to a slice without allocating new memory
+	return unsafe.Slice(cArrayPtr, cArrayLen)
 }

@@ -2,9 +2,10 @@
 #include <string.h>
 
 #include "libpoktroll_clients.h"
-#include "context.h"
 #include "unity.h"
 #include "poktroll/application/tx.pb-c.h"
+
+static const char* msg_stake_application_type_url = "poktroll.application.MsgStakeApplication";
 
 static void test_events_query_client(void)
 {
@@ -229,11 +230,11 @@ static void test_sign_and_broadcast_success(void)
     msg.services[0] = &service;
 
     // Calculate the serialized size
-    size_t msgBzLen = poktroll__application__msg_stake_application__get_packed_size(&msg);
+    size_t msg_bz_len = poktroll__application__msg_stake_application__get_packed_size(&msg);
 
     // Allocate buffer and serialize
-    uint8_t* msgBz = malloc(msgBzLen);
-    poktroll__application__msg_stake_application__pack(&msg, msgBz);
+    uint8_t* msg_bz = malloc(msg_bz_len);
+    poktroll__application__msg_stake_application__pack(&msg, msg_bz);
 
     // Get dependencies for tx client
     const go_ref supplyCfgRef = getTxClientDeps(&err);
@@ -254,8 +255,13 @@ static void test_sign_and_broadcast_success(void)
     };
 
     // Send the message
-    const char* typeUrl = "poktroll.application.MsgStakeApplication";
-    const go_ref errChRef = TxClient_SignAndBroadcast(&op, txClientRef, typeUrl, msgBz, msgBzLen);
+    serialized_proto serialized_msg = {
+        .type_url = (uint8_t*)msg_stake_application_type_url,
+        .type_url_length = strlen(msg_stake_application_type_url),
+        .data = msg_bz,
+        .data_length = msg_bz_len
+    };
+    const go_ref errChRef = TxClient_SignAndBroadcast(&op, txClientRef, &serialized_msg);
 
     // Wait for completion
     if (wait_for_completion(&ctx, 15000))
@@ -271,8 +277,7 @@ static void test_sign_and_broadcast_success(void)
 
     // Cleanup
     cleanup_context(&ctx);
-    free(msgBz);
-    free(msg.services);
+    free(msg_bz);
     FreeGoMem(errChRef);
     FreeGoMem(txClientRef);
     FreeGoMem(supplyCfgRef);
@@ -305,11 +310,11 @@ static void test_sign_and_broadcast_sync_error(void)
     msg.services[0] = &service1;
 
     // Calculate the serialized size
-    size_t msgBzLen = poktroll__application__msg_stake_application__get_packed_size(&msg);
+    size_t msg_bz_len = poktroll__application__msg_stake_application__get_packed_size(&msg);
 
     // Allocate buffer and serialize
-    uint8_t* msgBz = malloc(msgBzLen);
-    poktroll__application__msg_stake_application__pack(&msg, msgBz);
+    uint8_t* msg_bz = malloc(msg_bz_len);
+    poktroll__application__msg_stake_application__pack(&msg, msg_bz);
 
     // Get dependencies for tx client
     const go_ref supplyCfgRef = getTxClientDeps(&err);
@@ -331,8 +336,13 @@ static void test_sign_and_broadcast_sync_error(void)
     };
 
     // Send the message
-    const char* typeUrl = "poktroll.application.MsgStakeApplication";
-    const go_ref errChRef = TxClient_SignAndBroadcast(&op, txClientRef, typeUrl, msgBz, msgBzLen);
+    serialized_proto serialized_msg = {
+        .type_url = (uint8_t*)msg_stake_application_type_url,
+        .type_url_length = strlen(msg_stake_application_type_url),
+        .data = msg_bz,
+        .data_length = msg_bz_len
+    };
+    const go_ref errChRef = TxClient_SignAndBroadcast(&op, txClientRef, &serialized_msg);
 
     // Check that operation failed
     TEST_ASSERT_FALSE(ctx.success);
@@ -341,7 +351,7 @@ static void test_sign_and_broadcast_sync_error(void)
 
     // Cleanup
     cleanup_context(&ctx);
-    free(msgBz);
+    free(msg_bz);
     free(msg.services);
     FreeGoMem(errChRef);
     FreeGoMem(txClientRef);
@@ -375,17 +385,17 @@ static void test_sign_and_broadcast_async_error(void)
     msg.services[0] = &service1;
 
     // Calculate the serialized size
-    size_t msgBzLen = poktroll__application__msg_stake_application__get_packed_size(&msg);
+    size_t msg_bz_len = poktroll__application__msg_stake_application__get_packed_size(&msg);
 
     // Allocate buffer and serialize
-    uint8_t* msgBz = malloc(msgBzLen);
-    poktroll__application__msg_stake_application__pack(&msg, msgBz);
+    uint8_t* msg_bz = malloc(msg_bz_len);
+    poktroll__application__msg_stake_application__pack(&msg, msg_bz);
 
     // Get dependencies for tx client
-    const go_ref supplyCfgRef = getTxClientDeps(&err);
+    const go_ref supply_cfg_ref = getTxClientDeps(&err);
     TEST_ASSERT_EQUAL_STRING("", err);
 
-    const go_ref txClientRef = NewTxClient(supplyCfgRef, "app3", &err);
+    const go_ref tx_client_ref = NewTxClient(supply_cfg_ref, "app3", &err);
     TEST_ASSERT_EQUAL_STRING("", err);
 
     // Set up async context
@@ -400,8 +410,14 @@ static void test_sign_and_broadcast_async_error(void)
     };
 
     // Send the message
-    const char* typeUrl = "poktroll.application.MsgStakeApplication";
-    const go_ref errChRef = TxClient_SignAndBroadcast(&op, txClientRef, typeUrl, msgBz, msgBzLen);
+    serialized_proto serialized_msg = {
+        // .type_url = "poktroll.application.MsgStakeApplication",
+        .type_url = (uint8_t*)msg_stake_application_type_url,
+        .type_url_length = strlen(msg_stake_application_type_url),
+        .data = msg_bz,
+        .data_length = msg_bz_len
+    };
+    const go_ref err_ch_ref = TxClient_SignAndBroadcast(&op, tx_client_ref, &serialized_msg);
 
     // Wait for completion and verify error
     wait_for_completion(&ctx, 15000);
@@ -425,14 +441,13 @@ static void test_sign_and_broadcast_async_error(void)
 
     // Cleanup
     cleanup_context(&ctx);
-    free(msgBz);
+    free(msg_bz);
     free(msg.services);
-    FreeGoMem(errChRef);
-    FreeGoMem(txClientRef);
-    FreeGoMem(supplyCfgRef);
+    FreeGoMem(err_ch_ref);
+    FreeGoMem(tx_client_ref);
+    FreeGoMem(supply_cfg_ref);
     free(err);
 }
-
 
 void setUp(void)
 {

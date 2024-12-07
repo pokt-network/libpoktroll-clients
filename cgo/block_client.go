@@ -11,7 +11,7 @@ import (
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/../include
-#include <client.h>
+#include <memory.h>
 */
 import "C"
 

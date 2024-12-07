@@ -3,7 +3,8 @@ package main
 /*
 #cgo CFLAGS: -I${SRCDIR}/../include
 // #cgo LDFLAGS: -L${SRCDIR}/callback.c
-#include <client.h>
+#include <memory.h>
+#include <protobuf.h>
 #include <context.h>
 #include <callback.h>
 
@@ -22,6 +23,7 @@ static void bridge_error(AsyncOperation *op, char *err) {
 import "C"
 import (
 	"context"
+	"fmt"
 	"strings"
 	"unsafe"
 
@@ -66,21 +68,23 @@ func WithSigningKeyName(keyName *C.char) C.go_ref {
 func TxClient_SignAndBroadcast(
 	op *C.AsyncOperation,
 	txClientRef C.go_ref,
-	cTypeUrl *C.char,
-	msgBz *C.uchar,
-	msgBzLen C.int,
+	serializedProto *C.serialized_proto,
 ) C.go_ref {
 	goCtx := context.Background()
 
 	txClient, err := GetGoMem[client.TxClient](GoRef(txClientRef))
 	if err != nil {
+		err = fmt.Errorf("getting tx client ref: %s", err)
 		C.bridge_error(op, C.CString(err.Error()))
 		return C.go_ref(ZeroGoRef)
 	}
 
-	typeUrl := C.GoString(cTypeUrl)
+	typeUrl := string(C.GoBytes(unsafe.Pointer(serializedProto.type_url), C.int(serializedProto.type_url_length)))
 	if !strings.HasPrefix(typeUrl, "/") {
 		typeUrl = "/" + typeUrl
+	}
+	if strings.HasSuffix(typeUrl, string([]byte{0x00})) {
+		typeUrl = typeUrl[:len(typeUrl)-1]
 	}
 
 	msg, err := interfaceRegistry.Resolve(typeUrl)
@@ -89,7 +93,7 @@ func TxClient_SignAndBroadcast(
 		return C.go_ref(ZeroGoRef)
 	}
 
-	if err = cdc.Unmarshal(C.GoBytes(unsafe.Pointer(msgBz), msgBzLen), msg); err != nil {
+	if err = cdc.Unmarshal(C.GoBytes(unsafe.Pointer(serializedProto.data), C.int(serializedProto.data_length)), msg); err != nil {
 		C.bridge_error(op, C.CString(err.Error()))
 		return C.go_ref(ZeroGoRef)
 	}
@@ -124,6 +128,7 @@ func TxClient_SignAndBroadcastMany(
 
 	txClient, err := GetGoMem[client.TxClient](GoRef(txClientRef))
 	if err != nil {
+		err = fmt.Errorf("getting tx client ref: %s", err)
 		C.bridge_error(op, C.CString(err.Error()))
 		return C.go_ref(ZeroGoRef)
 	}
@@ -135,6 +140,7 @@ func TxClient_SignAndBroadcastMany(
 
 	msgs, err := CProtoMessageArrayToGoProtoMessages(protoMessageArray)
 	if err != nil {
+		err = fmt.Errorf("converting C proto messages to Go: %s", err)
 		C.bridge_error(op, C.CString(err.Error()))
 		return C.go_ref(ZeroGoRef)
 	}
