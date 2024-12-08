@@ -37,7 +37,7 @@ make package  # ALL
 ## OR
 cpack -G "TGZ;DEB;RPM"  # All
 cpack -G DEB            # Debian
-cpack -G RPM           # RHEL/CentOS
+cpack -G RPM            # RHEL/Fedora
 cpack -G TGZ            # tar.gz
 
 # Build arch install package (depends on TGZ from cpack).
