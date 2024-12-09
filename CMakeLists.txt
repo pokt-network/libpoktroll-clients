@@ -68,7 +68,10 @@ set_target_properties(poktroll_clients PROPERTIES
 
 target_link_libraries(poktroll_clients
         PRIVATE
+        ${CLIENTS_SHARED_LIB}.so
+        ${Protobuf_C_LIBRARIES}
         ${PROTOBUF_C_LIBRARIES}
+        protobuf-c
 )
 
 # Add your test executable
