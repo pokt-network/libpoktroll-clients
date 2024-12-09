@@ -4,9 +4,8 @@ project(libpoktroll_clients VERSION 0.1.0)  # Added version
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
 
-# Find protobuf package
+# Find required packages
 find_package(Protobuf REQUIRED)
-
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PROTOBUF_C REQUIRED libprotobuf-c)
 
@@ -30,6 +29,9 @@ include_directories(
         ${Protobuf_INCLUDE_DIRS}
         ${PROTOBUF_C_INCLUDE_DIRS}
 )
+
+# Add library search paths
+link_directories(${PROTOBUF_C_LIBRARY_DIRS})
 
 # Get list of Go source files
 file(GLOB_RECURSE GO_SOURCES
@@ -69,9 +71,7 @@ set_target_properties(poktroll_clients PROPERTIES
 target_link_libraries(poktroll_clients
         PRIVATE
         ${CLIENTS_SHARED_LIB}.so
-        ${Protobuf_C_LIBRARIES}
         ${PROTOBUF_C_LIBRARIES}
-        protobuf-c
 )
 
 # Add your test executable
@@ -80,8 +80,6 @@ add_executable(libpoktroll_clients_tests
         ${LIBPOKTROLL_CLIENTS_TESTS}
         ${UNITY_SRC}
         ${PROTO_SOURCES}
-        ${PROTOBUF_LIBRARIES}
-        ${Protobuf_C_LIBRARIES}
 )
 
 target_compile_options(libpoktroll_clients_tests PRIVATE -g)
@@ -89,9 +87,8 @@ target_compile_options(libpoktroll_clients_tests PRIVATE -g)
 # Link the test executable with your library and the Poktroll shared object
 target_link_libraries(libpoktroll_clients_tests
         PRIVATE
-        ${CLIENTS_SHARED_LIB}.so    # Updated path to the shared object
-        ${Protobuf_LIBRARIES}
-        protobuf-c              # Add protobuf-c library
+        ${CLIENTS_SHARED_LIB}.so
+        ${PROTOBUF_C_LIBRARIES}
 )
 
 # Make tests depend on the shared library being built
