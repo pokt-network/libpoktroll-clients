@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD 20)
 # Find protobuf package
 find_package(Protobuf REQUIRED)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PROTOBUF_C REQUIRED libprotobuf-c)
+
 # Define paths
 set(CLIENTS_SHARED_LIB ${CMAKE_SOURCE_DIR}/cgo/build/libpoktroll_clients)
 set(LIBPOKTROLL_CLIENTS_SRC ${CMAKE_SOURCE_DIR}/src/context.c)
@@ -25,6 +28,7 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/cgo/build
         ${PROTO_GEN_DIR}
         ${Protobuf_INCLUDE_DIRS}
+        ${PROTOBUF_C_INCLUDE_DIRS}
 )
 
 # Get list of Go source files
@@ -62,12 +66,19 @@ set_target_properties(poktroll_clients PROPERTIES
         PREFIX "lib"
 )
 
+target_link_libraries(poktroll_clients
+        PRIVATE
+        ${PROTOBUF_C_LIBRARIES}
+)
+
 # Add your test executable
 add_executable(libpoktroll_clients_tests
         ${LIBPOKTROLL_CLIENTS_SRC}
         ${LIBPOKTROLL_CLIENTS_TESTS}
         ${UNITY_SRC}
         ${PROTO_SOURCES}
+        ${PROTOBUF_LIBRARIES}
+        ${Protobuf_C_LIBRARIES}
 )
 
 target_compile_options(libpoktroll_clients_tests PRIVATE -g)
