@@ -4,8 +4,11 @@ This repo contains an asynchronous C API to the [Poktroll client packages](https
 
 ```bash
 # Clone and cd into the repo.
-git clone https://github.com/bryanchriswhite/libpoktroll_clients.git
+git clone https://github.com/bryanchriswhite/libpoktroll_clients.git --recurse-submodules
 cd libpoktroll_clients
+
+# If you cloned but didn't pull the submodules, run:
+git submodule update --init --recursive
 
 # (optional) Update protobufs ("pull" from buf.build)
 buf export buf.build/pokt-network/poktroll
