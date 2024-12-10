@@ -145,32 +145,10 @@ set(CPACK_PACKAGE_CONTACT "bryanchriswhite+libpoktroll_clients@gmail.com")
 
 # Platform-specific configurations
 if(APPLE)
-    # Find pandoc
-    find_program(PANDOC_EXECUTABLE pandoc)
-    if(NOT PANDOC_EXECUTABLE)
-        message(FATAL_ERROR "pandoc not found but is required for macOS packaging. Please install with: brew install pandoc")
-    endif()
-
     # macOS packaging
     list(APPEND CPACK_GENERATOR "productbuild")
     set(CPACK_PRODUCTBUILD_IDENTIFIER "network.pokt.libpoktroll-clients")
     set(CPACK_OSX_PACKAGE_VERSION "10.15")
-
-    # Convert README.md to HTML if it exists
-    if(EXISTS "${CMAKE_SOURCE_DIR}/README.md")
-        add_custom_command(
-                OUTPUT "${CMAKE_BINARY_DIR}/README.html"
-                COMMAND ${PANDOC_EXECUTABLE} -f markdown -t html
-                "${CMAKE_SOURCE_DIR}/README.md"
-                -o "${CMAKE_BINARY_DIR}/README.html"
-                DEPENDS "${CMAKE_SOURCE_DIR}/README.md"
-                COMMENT "Converting README.md to HTML"
-        )
-        add_custom_target(generate_readme ALL
-                DEPENDS "${CMAKE_BINARY_DIR}/README.html"
-        )
-        set(CPACK_RESOURCE_FILE_README "${CMAKE_BINARY_DIR}/README.html")
-    endif()
 
     # Copy LICENSE to txt format
     if(EXISTS "${CMAKE_SOURCE_DIR}/LICENSE")
@@ -187,6 +165,31 @@ if(APPLE)
             "Welcome to the POKT Network Client Library installer.\n\nThis will install the library and its required components on your system.")
     set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_BINARY_DIR}/Welcome.txt")
 
+    # Create a CPack scripts directory
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/CPack")
+
+    # Write a pre-package script that will handle pandoc conversion
+    file(WRITE "${CMAKE_BINARY_DIR}/CPack/pre_package.cmake"
+            "
+    # This script runs right before CPack generates the package
+    if(APPLE)
+        find_program(PANDOC_EXECUTABLE pandoc)
+        if(PANDOC_EXECUTABLE AND EXISTS \"\${CMAKE_SOURCE_DIR}/README.md\")
+            execute_process(
+                COMMAND \${PANDOC_EXECUTABLE} -f markdown -t html
+                        \"\${CMAKE_SOURCE_DIR}/README.md\"
+                        -o \"\${CMAKE_BINARY_DIR}/README.html\"
+                RESULT_VARIABLE PANDOC_RESULT
+            )
+            if(PANDOC_RESULT EQUAL 0)
+                set(CPACK_RESOURCE_FILE_README \"\${CMAKE_BINARY_DIR}/README.html\" PARENT_SCOPE)
+            endif()
+        endif()
+    endif()
+    ")
+
+    # Configure CPack to use the pre-package script
+    set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/CPack/pre_package.cmake")
 else()
     # Linux packaging
     set(CPACK_GENERATOR "TGZ;DEB;RPM")
