@@ -146,7 +146,20 @@ set(CPACK_PACKAGE_CONTACT "bryanchriswhite+libpoktroll_clients@gmail.com")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 
 # Enable multiple package formats
-set(CPACK_GENERATOR "TGZ;DEB;RPM")
+if(APPLE)
+    list(APPEND CPACK_GENERATOR "productbuild")  # macOS .pkg format
+
+    # macOS specific settings
+    set(CPACK_PRODUCTBUILD_IDENTIFIER "network.pokt.libpoktroll-clients")
+    set(CPACK_OSX_PACKAGE_VERSION "10.15")  # Minimum macOS version
+
+    # Optional: Set package signing identity if you have one
+    # set(CPACK_PRODUCTBUILD_IDENTITY_NAME "Developer ID Installer: Your Name (TEAM_ID)")
+endif()
+#set(CPACK_GENERATOR "TGZ;DEB;RPM")
+if(NOT APPLE)
+    set(CPACK_GENERATOR "TGZ;DEB;RPM")
+endif()
 
 # Debian-specific
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libprotobuf-c-dev")
