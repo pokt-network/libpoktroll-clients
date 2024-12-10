@@ -133,46 +133,75 @@ install(FILES ${CMAKE_BINARY_DIR}/libpoktroll_clients.pc
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 )
 
-# CPack configuration
+# Basic package information
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "POKT Network Client Library")
 set(CPACK_PACKAGE_VENDOR "POKT Network")
 
-# Set the maintainer contact information (required for Debian packages)
+# Set the maintainer contact information
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Bryan White <bryanchriswhite+libpoktroll_clients@gmail.com>")
 set(CPACK_PACKAGE_CONTACT "bryanchriswhite+libpoktroll_clients@gmail.com")
 
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
-
-# Enable multiple package formats
+# Platform-specific configurations
 if(APPLE)
-    list(APPEND CPACK_GENERATOR "productbuild")  # macOS .pkg format
+    # Find pandoc
+    find_program(PANDOC_EXECUTABLE pandoc)
+    if(NOT PANDOC_EXECUTABLE)
+        message(FATAL_ERROR "pandoc not found but is required for macOS packaging. Please install with: brew install pandoc")
+    endif()
 
-    # macOS specific settings
+    # macOS packaging
+    list(APPEND CPACK_GENERATOR "productbuild")
     set(CPACK_PRODUCTBUILD_IDENTIFIER "network.pokt.libpoktroll-clients")
-    set(CPACK_OSX_PACKAGE_VERSION "10.15")  # Minimum macOS version
+    set(CPACK_OSX_PACKAGE_VERSION "10.15")
 
-    # Optional: Set package signing identity if you have one
-    # set(CPACK_PRODUCTBUILD_IDENTITY_NAME "Developer ID Installer: Your Name (TEAM_ID)")
-endif()
-#set(CPACK_GENERATOR "TGZ;DEB;RPM")
-if(NOT APPLE)
+    # Convert README.md to HTML if it exists
+    if(EXISTS "${CMAKE_SOURCE_DIR}/README.md")
+        add_custom_command(
+                OUTPUT "${CMAKE_BINARY_DIR}/README.html"
+                COMMAND ${PANDOC_EXECUTABLE} -f markdown -t html
+                "${CMAKE_SOURCE_DIR}/README.md"
+                -o "${CMAKE_BINARY_DIR}/README.html"
+                DEPENDS "${CMAKE_SOURCE_DIR}/README.md"
+                COMMENT "Converting README.md to HTML"
+        )
+        add_custom_target(generate_readme ALL
+                DEPENDS "${CMAKE_BINARY_DIR}/README.html"
+        )
+        set(CPACK_RESOURCE_FILE_README "${CMAKE_BINARY_DIR}/README.html")
+    endif()
+
+    # Copy LICENSE to txt format
+    if(EXISTS "${CMAKE_SOURCE_DIR}/LICENSE")
+        configure_file(
+                "${CMAKE_SOURCE_DIR}/LICENSE"
+                "${CMAKE_BINARY_DIR}/LICENSE.txt"
+                COPYONLY
+        )
+        set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_BINARY_DIR}/LICENSE.txt")
+    endif()
+
+    # Create a simple welcome file
+    file(WRITE "${CMAKE_BINARY_DIR}/Welcome.txt"
+            "Welcome to the POKT Network Client Library installer.\n\nThis will install the library and its required components on your system.")
+    set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_BINARY_DIR}/Welcome.txt")
+
+else()
+    # Linux packaging
     set(CPACK_GENERATOR "TGZ;DEB;RPM")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+
+    # Debian-specific
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libprotobuf-c-dev")
+    set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
+    set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+
+    # RPM-specific
+    set(CPACK_RPM_PACKAGE_REQUIRES "protobuf-c-devel")
+    set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
+    set(CPACK_RPM_FILE_NAME RPM-DEFAULT)
 endif()
-
-# Debian-specific
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libprotobuf-c-dev")
-set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
-set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)  # Use standardized naming
-
-# RPM-specific
-set(CPACK_RPM_PACKAGE_REQUIRES "protobuf-c-devel")
-set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
-set(CPACK_RPM_FILE_NAME RPM-DEFAULT)  # Use standardized naming
-
-# Include CPack
-include(CPack)
 
 # Create pkg directory
 add_custom_command(
@@ -192,3 +221,6 @@ add_custom_target(pkgbuild
         COMMAND bash ${CMAKE_SOURCE_DIR}/scripts/build_pkg.sh ${CMAKE_BINARY_DIR} ${PROJECT_VERSION}
         COMMENT "Generating Arch Linux package"
 )
+
+# Include CPack
+include(CPack)
