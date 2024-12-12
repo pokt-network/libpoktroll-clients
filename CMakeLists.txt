@@ -2,6 +2,9 @@
 cmake_minimum_required(VERSION 3.29)
 project(libpoktroll_clients VERSION 0.1.0)
 
+# Add option for building tests
+option(BUILD_TESTS "Build test programs" OFF)
+
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
 
@@ -56,8 +59,10 @@ set_target_properties(poktroll_clients PROPERTIES
         PREFIX "lib"
 )
 
-# Include the test configuration
-include(${CMAKE_SOURCE_DIR}/cmake/TestConfig.cmake)
+# Include the test configuration only if BUILD_TESTS is enabled
+if(BUILD_TESTS)
+    include(${CMAKE_SOURCE_DIR}/cmake/TestConfig.cmake)
+endif()
 
 # Include the installer configuration
 include(${CMAKE_SOURCE_DIR}/cmake/InstallerConfig.cmake)
