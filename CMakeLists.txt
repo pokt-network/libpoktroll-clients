@@ -5,27 +5,14 @@ project(libpoktroll_clients VERSION 0.1.0)
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
 
-# Find protobuf package
-find_package(Protobuf REQUIRED)
-# Add pkg-config for finding protobuf-c
-include(FindPkgConfig)
-pkg_check_modules(PROTOBUFC REQUIRED libprotobuf-c)
-
 # Define paths
 set(CLIENTS_SHARED_LIB ${CMAKE_SOURCE_DIR}/cgo/build/libpoktroll_clients)
 set(LIBPOKTROLL_CLIENTS_SRC ${CMAKE_SOURCE_DIR}/src/context.c)
-set(PROTO_GEN_DIR ${CMAKE_SOURCE_DIR}/gen)
-
-# Find all generated protobuf source files
-file(GLOB_RECURSE PROTO_SOURCES "${PROTO_GEN_DIR}/**/*.pb-c.c")
 
 # Include directories
 include_directories(
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/cgo/build
-        ${PROTO_GEN_DIR}
-        ${Protobuf_INCLUDE_DIRS}
-        ${PROTOBUFC_INCLUDE_DIRS}
 )
 
 # Get list of Go source files
@@ -51,13 +38,12 @@ add_custom_target(build_go_shared_lib
 )
 
 # Add main library - make it SHARED explicitly
-add_library(poktroll_clients SHARED ${LIBPOKTROLL_CLIENTS_SRC} ${PROTO_SOURCES})
+add_library(poktroll_clients SHARED ${LIBPOKTROLL_CLIENTS_SRC})
 add_dependencies(poktroll_clients build_go_shared_lib)
 
-# Link against protobuf-c and the Go shared library
+# Link against the Go shared library only
 target_link_libraries(poktroll_clients
         PUBLIC
-        ${PROTOBUFC_LIBRARIES}
         ${CLIENTS_SHARED_LIB}.so
 )
 
