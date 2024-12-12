@@ -118,7 +118,11 @@ if(APPLE)
 else()
     # Linux specific settings
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        set(CPACK_GENERATOR "TGZ;DEB;RPM")
+        # Add STGZ to the generator list
+        set(CPACK_GENERATOR "TGZ;DEB;RPM;STGZ")
+
+        # STGZ specific settings
+        set(CPACK_STGZ_FILE_NAME "${PACKAGE_FILE_NAME}.sh")
 
         # Use plain text files for Linux
         set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
