@@ -18,8 +18,23 @@ This repo contains an asynchronous C API to the [Poktroll client packages](https
 ## Quickstart
 
 You can _EITHER_ **download** or **build** an OS/architecture-specific installer or shared library.
+
+### Download
+
 Downloads are available via the [releases page](https://github.com/bryanchriswhite/libpoktroll-clients/releases).
-To build from source, see the relevant sections below (and/or the ToC above).
+
+Installers are preferred as they only need to be run, whereas shared libraries **need to be renamed and saved to one of the OS's library search paths** (e.g. `/usr/lib/`, `/usr/local/lib/`, `~/.local/lib/`, etc.).
+Depending on your OS, the file extension will either be `.so`, `.dylib`, or `.dll` for linux, macOS, and Windows, respectively.
+
+To use linux as an example, the shared library would be named `libpoktroll_clients.so.0.1.0` and would need to be renamed to `libpoktroll_clients.so` and saved to any of the library search paths mentioned above.
+
+### Build
+
+To build from source, complete the [getting started](#getting-started-development-environment) section below, then run `sudo make install` or see the platform-specific sections below.
+
+As with downloaded shared libraries, following the platform-specific steps below will produce an OS/architecture-specific shared library, which will **need to be renamed and saved to one of the OS's library search paths**.
+
+To use linux as an example, the shared library would be named `libpoktroll_clients.so.0.1.0` and would need to be renamed to `libpoktroll_clients.so` and saved to any of the library search paths mentioned above.
 
 ## Getting started (development environment)
 ```bash
