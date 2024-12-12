@@ -1,3 +1,5 @@
+# cmake/InstallerConfig.cmake
+
 # Installation configuration
 include(GNUInstallDirs)
 
@@ -50,7 +52,6 @@ set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "POKT Network Client Library")
 set(CPACK_PACKAGE_VENDOR "POKT Network")
 set(CPACK_PACKAGE_CONTACT "bryanchriswhite+libpoktroll_clients@gmail.com")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_FILE_NAME ${PACKAGE_FILE_NAME})
 
 # Platform-specific configuration
@@ -74,10 +75,54 @@ if(APPLE)
     set(CPACK_DMG_FILE_NAME "${PACKAGE_FILE_NAME}")
     set(CPACK_PRODUCTBUILD_FILE_NAME "${PACKAGE_FILE_NAME}")
 
+    # Read license and readme content
+    file(READ "${CMAKE_SOURCE_DIR}/LICENSE" LICENSE_CONTENT)
+    file(READ "${CMAKE_SOURCE_DIR}/README.md" README_CONTENT)
+
+    # Function to escape special characters for RTF
+    function(escape_for_rtf content out_var)
+        string(REGEX REPLACE "\\\\" "\\\\\\\\" escaped "${content}")
+        string(REGEX REPLACE "\"" "\\\\\"" escaped "${escaped}")
+        string(REGEX REPLACE "\n" "\\\\par\n" escaped "${escaped}")
+        set(${out_var} "${escaped}" PARENT_SCOPE)
+    endfunction()
+
+    # Escape license and readme content
+    escape_for_rtf("${LICENSE_CONTENT}" ESCAPED_LICENSE)
+    escape_for_rtf("${README_CONTENT}" ESCAPED_README)
+
+    # Create RTF files for macOS
+    file(WRITE "${CMAKE_BINARY_DIR}/LICENSE.rtf" "{\\rtf1\\ansi\\ansicpg1252\\cocoartf2639
+\\cocoatextscaling0\\cocoaplatform0{\\fonttbl\\f0\\fswiss\\fcharset0 Helvetica;}
+{\\colortbl;\\red255\\green255\\blue255;}
+{\\*\\expandedcolortbl;;}
+\\paperw11900\\paperh16840\\margl1440\\margr1440\\vieww11520\\viewh8400\\viewkind0
+\\pard\\tx566\\tx1133\\tx1700\\tx2267\\tx2834\\tx3401\\tx3968\\tx4535\\tx5102\\tx5669\\tx6236\\tx6803\\pardirnatural\\partightenfactor0
+
+\\f0\\fs24 \\cf0 ${ESCAPED_LICENSE}}")
+
+    file(WRITE "${CMAKE_BINARY_DIR}/README.rtf" "{\\rtf1\\ansi\\ansicpg1252\\cocoartf2639
+\\cocoatextscaling0\\cocoaplatform0{\\fonttbl\\f0\\fswiss\\fcharset0 Helvetica;}
+{\\colortbl;\\red255\\green255\\blue255;}
+{\\*\\expandedcolortbl;;}
+\\paperw11900\\paperh16840\\margl1440\\margr1440\\vieww11520\\viewh8400\\viewkind0
+\\pard\\tx566\\tx1133\\tx1700\\tx2267\\tx2834\\tx3401\\tx3968\\tx4535\\tx5102\\tx5669\\tx6236\\tx6803\\pardirnatural\\partightenfactor0
+
+\\f0\\fs24 \\cf0 ${ESCAPED_README}}")
+
+    # Set the RTF files for the installer
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_BINARY_DIR}/LICENSE.rtf")
+    set(CPACK_RESOURCE_FILE_README "${CMAKE_BINARY_DIR}/README.rtf")
+    set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_BINARY_DIR}/README.rtf")
+
 else()
     # Linux specific settings
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         set(CPACK_GENERATOR "TGZ;DEB;RPM")
+
+        # Use plain text files for Linux
+        set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+        set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
 
         # Debian-specific
         set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Bryan White <bryanchriswhite+libpoktroll_clients@gmail.com>")
