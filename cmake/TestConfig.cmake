@@ -1,5 +1,3 @@
-# cmake/TestConfig.cmake
-
 # Find protobuf package and protobuf-c for tests only
 find_package(Protobuf REQUIRED)
 include(FindPkgConfig)

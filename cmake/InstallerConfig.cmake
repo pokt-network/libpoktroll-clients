@@ -1,5 +1,3 @@
-# cmake/InstallerConfig.cmake
-
 # Installation configuration
 include(GNUInstallDirs)
 
@@ -23,17 +21,9 @@ install(TARGETS poktroll_clients
 )
 
 # Install the Go shared library with proper naming
-if(APPLE)
-    set(SHARED_LIB_EXTENSION "dylib")
-    set(PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}-${ARCH}-darwin")
-else()
-    set(SHARED_LIB_EXTENSION "so")
-    set(PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}-${ARCH}-linux")
-endif()
-
-install(FILES ${CLIENTS_SHARED_LIB}.${SHARED_LIB_EXTENSION}
+install(FILES ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION}
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RENAME libpoktroll_clients.${SHARED_LIB_EXTENSION}.${PROJECT_VERSION}
+        RENAME libpoktroll_clients.${LIB_EXTENSION}.${PROJECT_VERSION}
         COMPONENT library
 )
 
@@ -47,6 +37,13 @@ install(FILES ${CMAKE_BINARY_DIR}/libpoktroll_clients.pc
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 )
 
+# Set package file name format
+if(APPLE)
+    set(PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}-${ARCH}-darwin")
+else()
+    set(PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}-${ARCH}-linux")
+endif()
+
 # CPack configuration
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
@@ -54,8 +51,6 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "POKT Network Client Library")
 set(CPACK_PACKAGE_VENDOR "POKT Network")
 set(CPACK_PACKAGE_CONTACT "bryanchriswhite+libpoktroll_clients@gmail.com")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
-
-# Set package file name format
 set(CPACK_PACKAGE_FILE_NAME ${PACKAGE_FILE_NAME})
 
 # Platform-specific configuration
@@ -78,11 +73,6 @@ if(APPLE)
     set(CPACK_PRODUCTBUILD_DOMAINS TRUE)
     set(CPACK_DMG_FILE_NAME "${PACKAGE_FILE_NAME}")
     set(CPACK_PRODUCTBUILD_FILE_NAME "${PACKAGE_FILE_NAME}")
-
-    # Dependencies for macOS (using Homebrew package names)
-    set(CPACK_PRODUCTBUILD_DEPENDENCIES
-            "protobuf-c"
-    )
 
 else()
     # Linux specific settings
