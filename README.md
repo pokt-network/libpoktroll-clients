@@ -2,10 +2,29 @@
 
 This repo contains an asynchronous C API to the [Poktroll client packages](https://pkg.go.dev/github.com/pokt-network/poktroll/pkg/client) via [cgo](https://pkg.go.dev/cmd/cgo) wrapper functions.
 
-## Getting started
+## Table of contents <!-- omit in toc -->
+
+- [Quickstart](#quickstart)
+- [Getting started (development environment)](#getting-started-development-environment)
+- [Linux](#linux)
+    - [Building shared libraries](#building-shared-libraries-1)
+    - [Building installers](#building-installers-1)
+- [MacOS](#macos)
+- [Cross-compiling from (arch) linux](#cross-compiling-from-arch-linux-1)
+    - [Targeting Windows](#targeting-windows)
+    - [Targeting macOS](#targeting-macos)
+
+
+## Quickstart
+
+You can _EITHER_ **download** or **build** an OS/architecture-specific installer or shared library.
+Downloads are available via the [releases page](https://github.com/bryanchriswhite/libpoktroll-clients/releases).
+To build from source, see the relevant sections below (and/or the ToC above).
+
+## Getting started (development environment)
 ```bash
 # Clone and cd into the repo.
-git clone https://github.com/bryanchriswhite/libpoktroll_clients.git --recurse-submodules
+git clone https://github.com/bryanchriswhite/libpoktroll-clients.git --recurse-submodules
 cd libpoktroll_clients
 
 # If you cloned but didn't pull the submodules, run:
