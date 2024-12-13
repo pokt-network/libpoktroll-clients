@@ -1,10 +1,10 @@
-# Poktroll C Clients Library
+# `libpoktroll` - C Clients Shared Library
 
-This repo contains an asynchronous C API to the [Poktroll client packages](https://pkg.go.dev/github.com/pokt-network/poktroll/pkg/client) via [cgo](https://pkg.go.dev/cmd/cgo) wrapper functions.
+An asynchronous C API which wraps the [`poktroll` client packages](https://pkg.go.dev/github.com/pokt-network/poktroll/pkg/client) (via [cgo](https://pkg.go.dev/cmd/cgo) wrapper functions).
 
 ## Table of contents <!-- omit in toc -->
 
-- [Quickstart](#quickstart)
+- [Installation](#installation)
 - [Getting started (development environment)](#getting-started-development-environment)
 - [Linux](#linux)
     - [Building shared libraries](#building-shared-libraries-1)
@@ -15,7 +15,7 @@ This repo contains an asynchronous C API to the [Poktroll client packages](https
     - [Targeting macOS](#targeting-macos)
 
 
-## Quickstart
+## Installation
 
 You can _EITHER_ **download** or **build** an OS/architecture-specific installer or shared library.
 
