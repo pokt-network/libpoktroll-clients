@@ -1,6 +1,6 @@
 # `libpoktroll` - C Clients Shared Library
 
-An asynchronous C API which wraps the [`poktroll` client packages](https://pkg.go.dev/github.com/pokt-network/poktroll/pkg/client) (via [cgo](https://pkg.go.dev/cmd/cgo) wrapper functions).
+An asynchronous, cross-platform C API which wraps the [`poktroll` client packages](https://pkg.go.dev/github.com/pokt-network/poktroll/pkg/client) (via [cgo](https://pkg.go.dev/cmd/cgo) wrapper functions).
 
 ## Table of contents <!-- omit in toc -->
 
