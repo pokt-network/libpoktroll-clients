@@ -82,15 +82,17 @@ cmake ..
 make package  # ALL
 
 ## Produces:
-#  - build/libpoktroll_clients-<version>-<arch>-linux.{sh,tar.gz}
 #  - build/libpoktroll_clients-<version>-<arch>-linux.deb
 #  - build/libpoktroll_clients-<version>-<arch>-linux.rpm
+#  - build/libpoktroll_clients-<version>-<arch>-linux.sh
+#  - build/libpoktroll_clients-<version>-<arch>-linux.tar.gz
 
 ## OR
-cpack -G "TGZ;DEB;RPM"  # All
-cpack -G DEB            # Debian/Ubuntu
-cpack -G RPM            # RHEL/Fedora
-cpack -G TGZ            # tar.gz
+cpack -G "DEB;RPM;STGZ;TGZ"  # All
+cpack -G DEB                 # Debian/Ubuntu
+cpack -G RPM                 # RHEL/Fedora
+cpack -G STGZ                # self-extracting tar.gz
+cpack -G TGZ                 # tar.gz
 
 # Build arch install package (depends on TGZ from cpack).
 make pkgbuild
@@ -130,7 +132,20 @@ cd poktroll-clients-py
 mkdir ./build && cd ./build
 cmake ..
 
-cpack -G "productbuild;TGZ"
+
+# Build deb/rpm/tar install packages.
+make package  # ALL
+
+## Produces:
+#  - build/libpoktroll_clients-<version>-<arch>-darwin.pkg
+#  - build/libpoktroll_clients-<version>-<arch>-darwin.sh
+#  - build/libpoktroll_clients-<version>-<arch>-darwin.tar.gz
+
+## OR
+cpack -G "productbuild;TGZ;STGZ"  # All
+cpack -G productbuild            # MacOS .pkg
+cpack -G STGZ                    # Self-extracting tar.gz
+cpack -G TGZ                     # tar.gz
 ```
 
 ## Cross-compiling from (arch) linux
