@@ -1,6 +1,3 @@
-# cmake/InstallerConfig.cmake
-
-# Installation configuration
 include(GNUInstallDirs)
 
 # Determine system architecture
@@ -12,14 +9,17 @@ else()
     set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
 endif()
 
-# Install targets with proper naming and symlinks
-install(TARGETS poktroll_clients
-        LIBRARY
+# Install the Go shared library directly
+install(FILES ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION}
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        NAMELINK_SKIP
-        PUBLIC_HEADER
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/poktroll
+        RENAME libpoktroll_clients.${LIB_EXTENSION}
         COMPONENT library
+)
+
+# Install headers
+install(FILES ${CMAKE_SOURCE_DIR}/include/context.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/poktroll
+        COMPONENT headers
 )
 
 # Install the Go shared library with proper naming
@@ -118,10 +118,10 @@ if(APPLE)
 else()
     # Linux specific settings
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        # Add STGZ to the generator list
+        # Specify the generator list
         set(CPACK_GENERATOR "TGZ;DEB;RPM;STGZ")
 
-        # STGZ specific settings
+        # STGZ naming
         set(CPACK_STGZ_FILE_NAME "${PACKAGE_FILE_NAME}.sh")
 
         # Use plain text files for Linux
@@ -130,12 +130,14 @@ else()
 
         # Debian-specific
         set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Bryan White <bryanchriswhite+libpoktroll_clients@gmail.com>")
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "libprotobuf-c-dev")
+        # TODO: Determine whether this is or should be necessary.
+        # set(CPACK_DEBIAN_PACKAGE_DEPENDS "libprotobuf-c-dev")
         set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
         set(CPACK_DEBIAN_FILE_NAME "${PACKAGE_FILE_NAME}.deb")
 
         # RPM-specific
-        set(CPACK_RPM_PACKAGE_REQUIRES "protobuf-c-devel")
+        # TODO: Determine whether this is or should be necessary.
+        # set(CPACK_RPM_PACKAGE_REQUIRES "protobuf-c-devel")
         set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
         set(CPACK_RPM_FILE_NAME "${PACKAGE_FILE_NAME}.rpm")
 
@@ -163,5 +165,5 @@ else()
     endif()
 endif()
 
-# Include CPack
+# Include CPack at the end.
 include(CPack)
