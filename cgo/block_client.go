@@ -20,7 +20,7 @@ func NewBlockClient(depsRef C.go_ref, cErr **C.char) C.go_ref {
 	// TODO_CONSIDERATION: Could support a version of methods which receive a go context, created elsewhere..
 	ctx := context.Background()
 
-	deps, err := GetGoMem[depinject.Config](GoRef(depsRef))
+	deps, err := GetGoMem[depinject.Config](depsRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return C.go_ref(NilGoRef)
@@ -32,5 +32,5 @@ func NewBlockClient(depsRef C.go_ref, cErr **C.char) C.go_ref {
 		return C.go_ref(NilGoRef)
 	}
 
-	return C.go_ref(SetGoMem(blockClient))
+	return SetGoMem(blockClient)
 }

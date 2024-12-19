@@ -12,14 +12,14 @@ import (
 )
 
 //export Supply
-func Supply(goRef GoRef, cErr **C.char) C.go_ref {
+func Supply(goRef C.go_ref, cErr **C.char) C.go_ref {
 	toSupply, err := GetGoMem[any](goRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return 0
 	}
 
-	return C.go_ref(SetGoMem(depinject.Supply(toSupply)))
+	return SetGoMem(depinject.Supply(toSupply))
 }
 
 //export SupplyMany
@@ -36,7 +36,7 @@ func SupplyMany(goRefs *C.go_ref, numGoRefs C.int, cErr **C.char) C.go_ref {
 
 	var toSupply []any
 	for _, ref := range refs {
-		valueToSupply, err := GetGoMem[any](GoRef(ref))
+		valueToSupply, err := GetGoMem[any](ref)
 		if err != nil {
 			*cErr = C.CString(err.Error())
 			//*cErr = C.CString(fmt.Sprintf("%+v", err))
@@ -46,7 +46,7 @@ func SupplyMany(goRefs *C.go_ref, numGoRefs C.int, cErr **C.char) C.go_ref {
 		toSupply = append(toSupply, valueToSupply)
 	}
 
-	return C.go_ref(SetGoMem(depinject.Supply(toSupply...)))
+	return SetGoMem(depinject.Supply(toSupply...))
 }
 
 //export Config
@@ -55,7 +55,7 @@ func Config(goRefs *C.go_ref, numGoRefs C.int, cErr **C.char) C.go_ref {
 
 	var configs []depinject.Config
 	for _, ref := range refs {
-		cfg, err := GetGoMem[depinject.Config](GoRef(ref))
+		cfg, err := GetGoMem[depinject.Config](ref)
 		if err != nil {
 			*cErr = C.CString(err.Error())
 			return 0
@@ -64,5 +64,5 @@ func Config(goRefs *C.go_ref, numGoRefs C.int, cErr **C.char) C.go_ref {
 		configs = append(configs, cfg)
 	}
 
-	return C.go_ref(SetGoMem(depinject.Configs(configs...)))
+	return SetGoMem(depinject.Configs(configs...))
 }

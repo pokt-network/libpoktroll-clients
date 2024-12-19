@@ -41,7 +41,7 @@ func NewTxClient(depsRef C.go_ref, signingKeyName *C.char, cErr **C.char) C.go_r
 	// TODO_CONSIDERATION: Could support a version of methods which receive a go context, created elsewhere..
 	ctx := context.Background()
 
-	deps, err := GetGoMem[depinject.Config](GoRef(depsRef))
+	deps, err := GetGoMem[depinject.Config](depsRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return C.go_ref(NilGoRef)
@@ -54,12 +54,12 @@ func NewTxClient(depsRef C.go_ref, signingKeyName *C.char, cErr **C.char) C.go_r
 		return C.go_ref(NilGoRef)
 	}
 
-	return C.go_ref(SetGoMem(txClient))
+	return SetGoMem(txClient)
 }
 
 //export WithSigningKeyName
 func WithSigningKeyName(keyName *C.char) C.go_ref {
-	return C.go_ref(SetGoMem(tx.WithSigningKeyName(C.GoString(keyName))))
+	return SetGoMem(tx.WithSigningKeyName(C.GoString(keyName)))
 }
 
 // TODO_IN_THIS_COMMIT: godoc...
@@ -72,11 +72,11 @@ func TxClient_SignAndBroadcast(
 ) C.go_ref {
 	goCtx := context.Background()
 
-	txClient, err := GetGoMem[client.TxClient](GoRef(txClientRef))
+	txClient, err := GetGoMem[client.TxClient](txClientRef)
 	if err != nil {
 		err = fmt.Errorf("getting tx client ref: %s", err)
 		C.bridge_error(op, C.CString(err.Error()))
-		return C.go_ref(ZeroGoRef)
+		return C.go_ref(NilGoRef)
 	}
 
 	typeUrl := string(C.GoBytes(unsafe.Pointer(serializedProto.type_url), C.int(serializedProto.type_url_length)))
@@ -90,19 +90,19 @@ func TxClient_SignAndBroadcast(
 	msg, err := interfaceRegistry.Resolve(typeUrl)
 	if err != nil {
 		C.bridge_error(op, C.CString(err.Error()))
-		return C.go_ref(ZeroGoRef)
+		return C.go_ref(NilGoRef)
 	}
 
 	if err = cdc.Unmarshal(C.GoBytes(unsafe.Pointer(serializedProto.data), C.int(serializedProto.data_length)), msg); err != nil {
 		C.bridge_error(op, C.CString(err.Error()))
-		return C.go_ref(ZeroGoRef)
+		return C.go_ref(NilGoRef)
 	}
 
 	eitherAsyncErr := txClient.SignAndBroadcast(goCtx, msg)
 	err, errCh := eitherAsyncErr.SyncOrAsyncError()
 	if err != nil {
 		C.bridge_error(op, C.CString(err.Error()))
-		return C.go_ref(ZeroGoRef)
+		return C.go_ref(NilGoRef)
 	}
 
 	go func() {
@@ -113,7 +113,7 @@ func TxClient_SignAndBroadcast(
 		}
 	}()
 
-	return C.go_ref(SetGoMem(errCh))
+	return SetGoMem(errCh)
 }
 
 // TODO_IN_THIS_COMMIT: godoc...
@@ -126,11 +126,11 @@ func TxClient_SignAndBroadcastMany(
 ) C.go_ref {
 	goCtx := context.Background()
 
-	txClient, err := GetGoMem[client.TxClient](GoRef(txClientRef))
+	txClient, err := GetGoMem[client.TxClient](txClientRef)
 	if err != nil {
 		err = fmt.Errorf("getting tx client ref: %s", err)
 		C.bridge_error(op, C.CString(err.Error()))
-		return C.go_ref(ZeroGoRef)
+		return C.go_ref(NilGoRef)
 	}
 
 	if protoMessageArray.num_messages == 0 {
@@ -142,14 +142,14 @@ func TxClient_SignAndBroadcastMany(
 	if err != nil {
 		err = fmt.Errorf("converting C proto messages to Go: %s", err)
 		C.bridge_error(op, C.CString(err.Error()))
-		return C.go_ref(ZeroGoRef)
+		return C.go_ref(NilGoRef)
 	}
 
 	eitherAsyncErr := txClient.SignAndBroadcast(goCtx, msgs...)
 	err, errCh := eitherAsyncErr.SyncOrAsyncError()
 	if err != nil {
 		C.bridge_error(op, C.CString(err.Error()))
-		return C.go_ref(ZeroGoRef)
+		return C.go_ref(NilGoRef)
 	}
 
 	go func() {
@@ -160,5 +160,5 @@ func TxClient_SignAndBroadcastMany(
 		}
 	}()
 
-	return C.go_ref(SetGoMem(errCh))
+	return SetGoMem(errCh)
 }
