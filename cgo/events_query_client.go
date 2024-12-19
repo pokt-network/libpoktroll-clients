@@ -21,7 +21,7 @@ func NewEventsQueryClient(cometWebsocketURLCString *C.char) C.go_ref {
 	cometWebsocketURL := C.GoString(cometWebsocketURLCString)
 	eventsQueryClient := events.NewEventsQueryClient(cometWebsocketURL)
 
-	return C.go_ref(SetGoMem(eventsQueryClient))
+	return SetGoMem(eventsQueryClient)
 }
 
 //export EventsQueryClientEventsBytes
@@ -30,7 +30,7 @@ func EventsQueryClientEventsBytes(clientRef C.go_ref, query *C.char, cErr **C.ch
 	ctx := context.Background()
 
 	eventsQueryClient, err :=
-		GetGoMem[client.EventsQueryClient](GoRef(clientRef))
+		GetGoMem[client.EventsQueryClient](clientRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return C.go_ref(NilGoRef)
@@ -42,5 +42,5 @@ func EventsQueryClientEventsBytes(clientRef C.go_ref, query *C.char, cErr **C.ch
 		return C.go_ref(NilGoRef)
 	}
 
-	return C.go_ref(SetGoMem(eventsBytesObs))
+	return SetGoMem(eventsBytesObs)
 }

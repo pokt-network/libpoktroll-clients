@@ -102,7 +102,7 @@ func NewTxContext(tcpURL *C.char, cErr **C.char) C.go_ref {
 		return 0
 	}
 
-	return C.go_ref(SetGoMem(txCtx))
+	return SetGoMem(txCtx)
 }
 
 // TODO_IN_THIS_COMMIT: godoc...

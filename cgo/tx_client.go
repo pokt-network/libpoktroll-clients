@@ -41,7 +41,7 @@ func NewTxClient(depsRef C.go_ref, signingKeyName *C.char, cErr **C.char) C.go_r
 	// TODO_CONSIDERATION: Could support a version of methods which receive a go context, created elsewhere..
 	ctx := context.Background()
 
-	deps, err := GetGoMem[depinject.Config](GoRef(depsRef))
+	deps, err := GetGoMem[depinject.Config](depsRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return C.go_ref(NilGoRef)
@@ -54,12 +54,12 @@ func NewTxClient(depsRef C.go_ref, signingKeyName *C.char, cErr **C.char) C.go_r
 		return C.go_ref(NilGoRef)
 	}
 
-	return C.go_ref(SetGoMem(txClient))
+	return SetGoMem(txClient)
 }
 
 //export WithSigningKeyName
 func WithSigningKeyName(keyName *C.char) C.go_ref {
-	return C.go_ref(SetGoMem(tx.WithSigningKeyName(C.GoString(keyName))))
+	return SetGoMem(tx.WithSigningKeyName(C.GoString(keyName)))
 }
 
 // TODO_IN_THIS_COMMIT: godoc...
@@ -72,7 +72,7 @@ func TxClient_SignAndBroadcast(
 ) C.go_ref {
 	goCtx := context.Background()
 
-	txClient, err := GetGoMem[client.TxClient](GoRef(txClientRef))
+	txClient, err := GetGoMem[client.TxClient](txClientRef)
 	if err != nil {
 		err = fmt.Errorf("getting tx client ref: %s", err)
 		C.bridge_error(op, C.CString(err.Error()))
@@ -113,7 +113,7 @@ func TxClient_SignAndBroadcast(
 		}
 	}()
 
-	return C.go_ref(SetGoMem(errCh))
+	return SetGoMem(errCh)
 }
 
 // TODO_IN_THIS_COMMIT: godoc...
@@ -126,7 +126,7 @@ func TxClient_SignAndBroadcastMany(
 ) C.go_ref {
 	goCtx := context.Background()
 
-	txClient, err := GetGoMem[client.TxClient](GoRef(txClientRef))
+	txClient, err := GetGoMem[client.TxClient](txClientRef)
 	if err != nil {
 		err = fmt.Errorf("getting tx client ref: %s", err)
 		C.bridge_error(op, C.CString(err.Error()))
@@ -160,5 +160,5 @@ func TxClient_SignAndBroadcastMany(
 		}
 	}()
 
-	return C.go_ref(SetGoMem(errCh))
+	return SetGoMem(errCh)
 }
