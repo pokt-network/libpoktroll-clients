@@ -88,11 +88,11 @@ make package  # ALL
 #  - build/libpoktroll_clients-<version>-<arch>-linux.tar.gz
 
 ## OR
-cpack -T "DEB;RPM;STGZ;TGZ"  # All
-cpack -T DEB                 # Debian/Ubuntu
-cpack -T RPM                 # RHEL/Fedora
-cpack -T STGZ                # self-extracting tar.gz
-cpack -T TGZ                 # tar.gz
+cpack -G "DEB;RPM;STGZ;TGZ"  # All
+cpack -G DEB                 # Debian/Ubuntu
+cpack -G RPM                 # RHEL/Fedora
+cpack -G STGZ                # self-extracting tar.gz
+cpack -G TGZ                 # tar.gz
 
 # Build arch install package (depends on TGZ from cpack).
 make pkgbuild
@@ -142,10 +142,10 @@ make package  # ALL
 #  - build/libpoktroll_clients-<version>-<arch>-darwin.tar.gz
 
 ## OR
-cpack -T "productbuild;TGZ;STGZ"  # All
-cpack -T productbuild            # MacOS .pkg
-cpack -T STGZ                    # Self-extracting tar.gz
-cpack -T TGZ                     # tar.gz
+cpack -G "productbuild;TGZ;STGZ" # All
+cpack -G productbuild            # MacOS .pkg
+cpack -G STGZ                    # Self-extracting tar.gz
+cpack -G TGZ                     # tar.gz
 ```
 
 ## Cross-compiling from (arch) linux
