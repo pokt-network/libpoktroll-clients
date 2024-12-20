@@ -109,7 +109,7 @@ func NewMultiQueryClient(deps depinject.Config, queryNodeRPCURL string) (MultiQu
 	}, nil
 }
 
-// TODO_IN_THIS_COMMIT: godoc...
+// queryClient composes all poktroll module query clients.
 type queryClient struct {
 	client.AccountQueryClient
 	client.BankQueryClient
