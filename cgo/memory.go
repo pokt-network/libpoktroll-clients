@@ -78,18 +78,13 @@ func GetGoProtoAsSerializedProto(ref C.go_ref, cErr **C.char) unsafe.Pointer {
 	goMemoryMapMu.RLock()
 	defer goMemoryMapMu.RUnlock()
 
-	value, ok := goMemoryMap[GoRef(ref)]
-	if !ok {
+	value, err := GetGoMem[gogoproto.Message](ref)
+	if err != nil {
+		*cErr = C.CString(err.Error())
 		return C.NULL
 	}
 
-	proto_value, ok := value.(gogoproto.Message)
-	if !ok {
-		*cErr = C.CString(fmt.Sprintf("expected proto value, got: %T", value))
-		return C.NULL
-	}
-
-	proto_bz, err := cdc.Marshal(proto_value)
+	proto_bz, err := cdc.Marshal(value)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return C.NULL
@@ -97,8 +92,8 @@ func GetGoProtoAsSerializedProto(ref C.go_ref, cErr **C.char) unsafe.Pointer {
 
 	cSerializedProto := C.malloc(C.size_t(unsafe.Sizeof(C.serialized_proto{})))
 	*(*C.serialized_proto)(cSerializedProto) = C.serialized_proto{
-		type_url:        (*C.uint8_t)(C.CBytes([]byte(types.MsgTypeURL(proto_value)))),
-		type_url_length: C.size_t(len(types.MsgTypeURL(proto_value))),
+		type_url:        (*C.uint8_t)(C.CBytes([]byte(types.MsgTypeURL(value)))),
+		type_url_length: C.size_t(len(types.MsgTypeURL(value))),
 		data:            (*C.uint8_t)(C.CBytes(proto_bz)),
 		data_length:     C.size_t(len(proto_bz)),
 	}
