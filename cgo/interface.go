@@ -16,9 +16,6 @@ type MultiQueryClient interface {
 	// client.EventsQueryClient
 	// client.DelegationClient
 
-	// TODO_TECHDEBT(@bryanchriswhite): There's no gateway query client yet. 😅
-	// GatewayQueryClient
-
 	client.AccountQueryClient
 	client.BankQueryClient
 	client.BlockQueryClient
@@ -29,9 +26,14 @@ type MultiQueryClient interface {
 	ServiceQueryClient
 	ProofQueryClient
 
+	// TODO_TECHDEBT(@bryanchriswhite): There's no gateway query client yet. 😅
+	// GatewayQueryClient
+
 	GetSharedParams(ctx context.Context) (*sharedtypes.Params, error)
 	GetSessionParams(ctx context.Context) (*sessiontypes.Params, error)
 	GetProofParams(ctx context.Context) (*prooftypes.Params, error)
+
+	// TODO_BLOCKED(@bryanchriswhite poktroll#543): add once available.
 	//GetApplicationParams(ctx context.Context) (*apptypes.Params, error)
 	//GetSupplierParams(ctx context.Context) (*sharedtypes.Params, error)
 	//GetServiceParams(ctx context.Context) (*sharedtypes.Params, error)
@@ -46,10 +48,6 @@ type ApplicationQueryClient interface {
 
 	// GetAllApplications queries all on-chain applications
 	GetAllApplications(ctx context.Context) ([]apptypes.Application, error)
-
-	// TODO_BLOCKED(@bryanchriswhite poktroll#543): add once available.
-	// TODO_IN_THIS_COMMIT: godoc...
-	//GetApplicationParams(ctx context.Context) (*apptypes.Params, error)
 }
 
 // SupplierQueryClient defines an interface that enables the querying of the
@@ -57,10 +55,6 @@ type ApplicationQueryClient interface {
 type SupplierQueryClient interface {
 	// GetSupplier queries the chain for the details of the supplier provided
 	GetSupplier(ctx context.Context, supplierOperatorAddress string) (sharedtypes.Supplier, error)
-
-	// TODO_BLOCKED(@bryanchriswhite poktroll#543): add once available.
-	// TODO_IN_THIS_COMMIT: godoc...
-	//GetSupplierParams(ctx context.Context) (*sharedtypes.Params, error)
 }
 
 // SessionQueryClient defines an interface that enables the querying of the
@@ -73,19 +67,11 @@ type SessionQueryClient interface {
 		serviceId string,
 		blockHeight int64,
 	) (*sessiontypes.Session, error)
-
-	// TODO_BLOCKED(@bryanchriswhite poktroll#543): add once available.
-	// GetSessionParams queries the chain for the session module parameters.
-	//GetSessionParams(ctx context.Context) (*sessiontypes.Params, error)
 }
 
 // SharedQueryClient defines an interface that enables the querying of the
 // on-chain shared module params.
 type SharedQueryClient interface {
-	// TODO_BLOCKED(@bryanchriswhite poktroll#543): add once available.
-	// GetSharedParams queries the chain for the current shared module parameters.
-	// GetSharedParams(ctx context.Context) (*sharedtypes.Params, error)
-
 	// GetSessionGracePeriodEndHeight returns the block height at which the grace period
 	// for the session that includes queryHeight elapses.
 	// The grace period is the number of blocks after the session ends during which relays
@@ -121,10 +107,6 @@ type ServiceQueryClient interface {
 	// GetService queries the chain for the details of the service provided
 	GetService(ctx context.Context, serviceId string) (sharedtypes.Service, error)
 	GetServiceRelayDifficulty(ctx context.Context, serviceId string) (servicetypes.RelayMiningDifficulty, error)
-
-	// TODO_BLOCKED(@bryanchriswhite poktroll#543): add once available.
-	// TODO_IN_THIS_COMMIT: godoc...
-	//GetServiceParams(ctx context.Context) (*sharedtypes.Params, error)
 }
 
 // TODO_NEXT: tokenomics query client doesn't exist yet. 😅

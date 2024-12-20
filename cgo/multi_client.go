@@ -18,7 +18,7 @@ import (
 
 var _ MultiQueryClient = (*queryClient)(nil)
 
-// TODO_IN_THIS_COMMIT: godoc...
+// NewMultiQueryClient constructs a new MultiQueryClient and returns its Go reference to the C caller.
 // Required dependencies:
 //   - cosmosclient.Context (gogogrpc.ClientConn)
 //   - client.BlockQueryClient
