@@ -31,25 +31,6 @@ func NewQueryClient(depsRef C.go_ref, queryNodeRPCURL *C.char, cErr **C.char) C.
 	return SetGoMem(multiClient)
 }
 
-// QueryClient_GetSharedParams queries the chain for the current shared module parameters.
-//
-//export QueryClient_GetSharedParams
-func QueryClient_GetSharedParams(depsRef C.go_ref, cErr **C.char) C.go_ref {
-	multiClient, err := GetGoMem[MultiQueryClient](depsRef)
-	if err != nil {
-		*cErr = C.CString(err.Error())
-		return C.go_ref(NilGoRef)
-	}
-
-	sharedParams, err := multiClient.GetSharedParams(context.TODO())
-	if err != nil {
-		*cErr = C.CString(err.Error())
-		return C.go_ref(NilGoRef)
-	}
-
-	return SetGoMem(sharedParams)
-}
-
 // QueryClient_GetSessionParams queries the chain for the current session module parameters.
 //
 //export QueryClient_GetSessionParams
