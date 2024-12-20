@@ -4,16 +4,16 @@ pkgname=@PROJECT_NAME@
 pkgver=@PROJECT_VERSION@
 pkgrel=1
 pkgdesc="@CPACK_PACKAGE_DESCRIPTION_SUMMARY@"
-arch=('x86_64')
+arch=('@ARCH@')
 url="https://github.com/pokt-network/libpoktroll_clients"
 license=('MIT')
 depends=('protobuf-c' 'go')
 makedepends=('cmake' 'protobuf')
-source=("$pkgname-$pkgver-Linux.tar.gz")
+source=("$pkgname-$pkgver-@ARCH@-linux.tar.gz")
 sha256sums=('SKIP')
 
 package() {
-    cd "$srcdir/$pkgname-$pkgver-Linux"
+    cd "$srcdir/$pkgname-$pkgver-@ARCH@-linux"
 
     # Install headers
     install -Dm644 include/poktroll/context.h "$pkgdir/usr/include/poktroll/context.h"
