@@ -8,6 +8,7 @@ package main
 import "C"
 import (
 	"context"
+	"unsafe"
 
 	"cosmossdk.io/depinject"
 )
@@ -34,39 +35,51 @@ func NewQueryClient(depsRef C.go_ref, queryNodeRPCURL *C.char, cErr **C.char) C.
 // QueryClient_GetSessionParams queries the chain for the current session module parameters.
 //
 //export QueryClient_GetSessionParams
-func QueryClient_GetSessionParams(depsRef C.go_ref, cErr **C.char) C.go_ref {
+func QueryClient_GetSessionParams(depsRef C.go_ref, cErr **C.char) unsafe.Pointer {
 	multiClient, err := GetGoMem[MultiQueryClient](depsRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
-		return C.go_ref(NilGoRef)
+		return C.NULL
 	}
 
 	sessionParams, err := multiClient.GetSessionParams(context.TODO())
 	if err != nil {
 		*cErr = C.CString(err.Error())
-		return C.go_ref(NilGoRef)
+		return C.NULL
 	}
 
-	return SetGoMem(sessionParams)
+	cSerializedProto, err := CSerializedProtoFromGoProto(sessionParams)
+	if err != nil {
+		*cErr = C.CString(err.Error())
+		return C.NULL
+	}
+
+	return cSerializedProto
 }
 
 // QueryClient_GetProofParams queries the chain for the current proof module parameters.
 //
 //export QueryClient_GetProofParams
-func QueryClient_GetProofParams(depsRef C.go_ref, cErr **C.char) C.go_ref {
+func QueryClient_GetProofParams(depsRef C.go_ref, cErr **C.char) unsafe.Pointer {
 	multiClient, err := GetGoMem[MultiQueryClient](depsRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
-		return C.go_ref(NilGoRef)
+		return C.NULL
 	}
 
 	proofParams, err := multiClient.GetProofParams(context.TODO())
 	if err != nil {
 		*cErr = C.CString(err.Error())
-		return C.go_ref(NilGoRef)
+		return C.NULL
 	}
 
-	return SetGoMem(proofParams)
+	cSerializedProto, err := CSerializedProtoFromGoProto(proofParams)
+	if err != nil {
+		*cErr = C.CString(err.Error())
+		return C.NULL
+	}
+
+	return cSerializedProto
 }
 
 /* TODO_BLOCKED(@bryanchriswhite, #543): uncomment & implement once dependencies are available.

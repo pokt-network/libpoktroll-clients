@@ -7,25 +7,32 @@ import "C"
 import (
 	"context"
 	"fmt"
+	"unsafe"
 )
 
 // QueryClient_GetSharedParams queries the chain for the current shared module parameters.
 //
 //export QueryClient_GetSharedParams
-func QueryClient_GetSharedParams(depsRef C.go_ref, cErr **C.char) C.go_ref {
+func QueryClient_GetSharedParams(depsRef C.go_ref, cErr **C.char) unsafe.Pointer {
 	multiClient, err := GetGoMem[MultiQueryClient](depsRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
-		return C.go_ref(NilGoRef)
+		return C.NULL
 	}
 
 	sharedParams, err := multiClient.GetSharedParams(context.TODO())
 	if err != nil {
 		*cErr = C.CString(err.Error())
-		return C.go_ref(NilGoRef)
+		return C.NULL
 	}
 
-	return SetGoMem(sharedParams)
+	cSerializedProto, err := CSerializedProtoFromGoProto(sharedParams)
+	if err != nil {
+		*cErr = C.CString(err.Error())
+		return C.NULL
+	}
+
+	return cSerializedProto
 }
 
 // QueryClient_GetSessionGracePeriodEndHeight returns the block height at which
@@ -75,14 +82,14 @@ func QueryClient_GetClaimWindowOpenHeight(depsRef C.go_ref, queryHeight C.int64_
 //
 //export QueryClient_GetEarliestSupplierClaimCommitHeight
 func QueryClient_GetEarliestSupplierClaimCommitHeight(
-	depsRef C.go_ref,
+	clientRef C.go_ref,
 	queryHeight C.int64_t,
 	supplierOperatorAddr *C.char,
 	cErr **C.char,
 ) C.int64_t {
 	fmt.Printf(">>> Go queryHeight: %d\n", queryHeight)
 
-	multiClient, err := GetGoMem[MultiQueryClient](depsRef)
+	multiClient, err := GetGoMem[MultiQueryClient](clientRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return 0
@@ -105,8 +112,8 @@ func QueryClient_GetEarliestSupplierClaimCommitHeight(
 // the session that includes queryHeight opens.
 //
 //export QueryClient_GetProofWindowOpenHeight
-func QueryClient_GetProofWindowOpenHeight(depsRef C.go_ref, queryHeight C.int64_t, cErr **C.char) C.int64_t {
-	multiClient, err := GetGoMem[MultiQueryClient](depsRef)
+func QueryClient_GetProofWindowOpenHeight(clientRef C.go_ref, queryHeight C.int64_t, cErr **C.char) C.int64_t {
+	multiClient, err := GetGoMem[MultiQueryClient](clientRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return 0
@@ -126,12 +133,12 @@ func QueryClient_GetProofWindowOpenHeight(depsRef C.go_ref, queryHeight C.int64_
 //
 //export QueryClient_GetEarliestSupplierProofCommitHeight
 func QueryClient_GetEarliestSupplierProofCommitHeight(
-	depsRef C.go_ref,
+	clientRef C.go_ref,
 	queryHeight C.int64_t,
 	supplierOperatorAddr *C.char,
 	cErr **C.char,
 ) C.int64_t {
-	multiClient, err := GetGoMem[MultiQueryClient](depsRef)
+	multiClient, err := GetGoMem[MultiQueryClient](clientRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return 0
@@ -153,8 +160,8 @@ func QueryClient_GetEarliestSupplierProofCommitHeight(
 // QueryClient_GetComputeUnitsToTokensMultiplier returns the multiplier used to convert compute units to tokens.
 //
 //export QueryClient_GetComputeUnitsToTokensMultiplier
-func QueryClient_GetComputeUnitsToTokensMultiplier(depsRef C.go_ref, cErr **C.char) C.uint64_t {
-	multiClient, err := GetGoMem[MultiQueryClient](depsRef)
+func QueryClient_GetComputeUnitsToTokensMultiplier(clientRef C.go_ref, cErr **C.char) C.uint64_t {
+	multiClient, err := GetGoMem[MultiQueryClient](clientRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return 0

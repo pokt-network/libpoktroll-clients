@@ -97,19 +97,67 @@ func GetGoProtoAsSerializedProto(ref C.go_ref, cErr **C.char) unsafe.Pointer {
 		return C.NULL
 	}
 
-	proto_bz, err := cdc.Marshal(value)
+	cSerializedProto, err := CSerializedProtoFromGoProto(value)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return C.NULL
 	}
 
+	return cSerializedProto
+}
+
+func CSerializedProtoFromGoProto(value gogoproto.Message) (unsafe.Pointer, error) {
+	typeURL := []byte(cosmostypes.MsgTypeURL(value))
+	proto_bz, err := cdc.Marshal(value)
+	if err != nil {
+		return nil, err
+	}
+
 	cSerializedProto := C.malloc(C.size_t(unsafe.Sizeof(C.serialized_proto{})))
 	*(*C.serialized_proto)(cSerializedProto) = C.serialized_proto{
-		type_url:        (*C.uint8_t)(C.CBytes([]byte(cosmostypes.MsgTypeURL(value)))),
-		type_url_length: C.size_t(len(cosmostypes.MsgTypeURL(value))),
+		type_url:        (*C.uint8_t)(C.CBytes(typeURL)),
+		type_url_length: C.size_t(len(typeURL)),
 		data:            (*C.uint8_t)(C.CBytes(proto_bz)),
 		data_length:     C.size_t(len(proto_bz)),
 	}
 
-	return unsafe.Pointer(cSerializedProto)
+	return cSerializedProto, nil
+}
+
+// TODO_IN_THIS_COMMIT: godoc... caller is responsible for freeing.
+func CProtoMessageArrayFromGoProtoMessages(msgs []gogoproto.Message) (unsafe.Pointer, error) {
+	// Allocate the main structure
+	protoMessageArray := (*C.proto_message_array)(C.malloc(C.size_t(unsafe.Sizeof(C.proto_message_array{}))))
+
+	// Set the number of messages
+	protoMessageArray.num_messages = C.size_t(len(msgs))
+
+	// Allocate array of serialized_proto structures
+	sizeOfSerializedProto := unsafe.Sizeof(C.serialized_proto{})
+	messagesArray := (*C.serialized_proto)(C.malloc(C.size_t(sizeOfSerializedProto) * C.size_t(len(msgs))))
+	protoMessageArray.messages = messagesArray
+
+	// Populate each message in the array
+	for i, msg := range msgs {
+		// Calculate pointer to current serialized_proto
+		msgMemAddr := uintptr(unsafe.Pointer(messagesArray))
+		msgOffset := uintptr(i) * sizeOfSerializedProto
+		currentProto := (*C.serialized_proto)(unsafe.Pointer(msgMemAddr + msgOffset))
+
+		// Populate type_url
+		typeURL := []byte(cosmostypes.MsgTypeURL(msg))
+		currentProto.type_url = (*C.uint8_t)(C.CBytes(typeURL))
+		currentProto.type_url_length = C.size_t(len(typeURL))
+
+		// Serialize & populate the message
+		msgBz, err := cdc.Marshal(msg)
+		if err != nil {
+			return nil, err
+		}
+
+		currentProto.data = (*C.uint8_t)(C.CBytes(msgBz))
+		currentProto.data_length = C.size_t(len(msgBz))
+	}
+
+	return unsafe.Pointer(protoMessageArray), nil
 }
