@@ -10,10 +10,6 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
-	"unsafe"
-
-	"github.com/cosmos/cosmos-sdk/types"
-	gogoproto "github.com/cosmos/gogoproto/proto"
 )
 
 const (
@@ -53,6 +49,8 @@ func SetGoMem(value any) C.go_ref {
 
 // GetGoMem returns the value associated with the given Go reference.
 func GetGoMem[T any](ref C.go_ref) (T, error) {
+	var zeroT T
+
 	goMemoryMapMu.RLock()
 	defer goMemoryMapMu.RUnlock()
 
@@ -63,47 +61,10 @@ func GetGoMem[T any](ref C.go_ref) (T, error) {
 
 	valueT, ok := value.(T)
 	if !ok {
-		return valueT, fmt.Errorf("expected %T, got: %T", *new(T), value)
+		return valueT, fmt.Errorf("expected %T, got: %T", zeroT, value)
 	}
 
 	return valueT, nil
-}
-
-// GetGoRPCProtoAsSerializedProto returns a serialized proto (C struct) corresponding
-// to the given Go reference. If the referens is not found or to a non-protobuf type,
-// the error string is set and NULL is returned to the C caller
-//
-//export GetGoProtoAsSerializedProto
-func GetGoProtoAsSerializedProto(ref C.go_ref, cErr **C.char) unsafe.Pointer {
-	goMemoryMapMu.RLock()
-	defer goMemoryMapMu.RUnlock()
-
-	value, ok := goMemoryMap[GoRef(ref)]
-	if !ok {
-		return C.NULL
-	}
-
-	proto_value, ok := value.(gogoproto.Message)
-	if !ok {
-		*cErr = C.CString(fmt.Sprintf("expected proto value, got: %T", value))
-		return C.NULL
-	}
-
-	proto_bz, err := cdc.Marshal(proto_value)
-	if err != nil {
-		*cErr = C.CString(err.Error())
-		return C.NULL
-	}
-
-	cSerializedProto := C.malloc(C.size_t(unsafe.Sizeof(C.serialized_proto{})))
-	*(*C.serialized_proto)(cSerializedProto) = C.serialized_proto{
-		type_url:        (*C.uint8_t)(C.CBytes([]byte(types.MsgTypeURL(proto_value)))),
-		type_url_length: C.size_t(len(types.MsgTypeURL(proto_value))),
-		data:            (*C.uint8_t)(C.CBytes(proto_bz)),
-		data_length:     C.size_t(len(proto_bz)),
-	}
-
-	return unsafe.Pointer(cSerializedProto)
 }
 
 // FreeGoMem frees the go-allocated memory associated with the given Go reference.
