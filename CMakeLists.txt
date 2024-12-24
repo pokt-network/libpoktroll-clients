@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(libpoktroll_clients VERSION 0.1.0)
+project(libpoktroll_clients VERSION 0.2.0)
 
 # Add option for building tests
 option(BUILD_TESTS "Build test programs" OFF)
@@ -72,9 +72,10 @@ add_custom_target(build_go_shared_lib
 )
 
 add_custom_target(poktroll_clients ALL
-        COMMAND ${CMAKE_COMMAND} -E copy ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION} ${CMAKE_BINARY_DIR}/libpoktroll_clients.${LIB_EXTENSION}
+        COMMAND ${CMAKE_COMMAND} -E copy ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION} ${CMAKE_BINARY_DIR}/libpoktroll_clients.${LIB_EXTENSION}.${PROJECT_VERSION}
+        COMMAND ${CMAKE_COMMAND} -E create_symlink libpoktroll_clients.${LIB_EXTENSION}.${PROJECT_VERSION} ${CMAKE_BINARY_DIR}/libpoktroll_clients.${LIB_EXTENSION}
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/cgo/build/libpoktroll_clients.h ${CMAKE_BINARY_DIR}/libpoktroll_clients.h
-        DEPENDS build_go_shared_lib
+        DEPENDS ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION}
 )
 
 # Set library properties for versioning and naming
