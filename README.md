@@ -26,7 +26,7 @@ Downloads are available via the [releases page](https://github.com/bryanchriswhi
 Installers are preferred as they only need to be run, whereas shared libraries **need to be renamed and saved to one of the OS's library search paths** (e.g. `/usr/lib/`, `/usr/local/lib/`, `~/.local/lib/`, etc.).
 Depending on your OS, the file extension will either be `.so`, `.dylib`, or `.dll` for linux, macOS, and Windows, respectively.
 
-E.g.: For v0.1.0 x86_64 linux, `libpoktroll_clients-v0.1.0-amd64.so` -> `/usr/local/lib/libpoktroll_clients.so`
+E.g.: For v0.2.0 x86_64 linux, `libpoktroll_clients.so.0.2.0` -> `/usr/local/lib/libpoktroll_clients.so`
 
 ### Build
 
@@ -34,7 +34,7 @@ To build from source, complete the [getting started](#getting-started-developmen
 
 As with downloaded shared libraries (see above), the steps outlined in the platform-specific sections below will produce an OS/architecture-specific shared library, which will **need to be renamed and saved to one of the OS's library search paths**.
 
-E.g.: For v0.1.0 x86_64 linux, `libpoktroll_clients-v0.1.0-amd64.so` -> `/usr/local/lib/libpoktroll_clients.so`
+E.g.: For v0.2.0 x86_64 linux, `libpoktroll_clients.so.0.2.0` -> `/usr/local/lib/libpoktroll_clients.so`
 
 ## Getting started (development environment)
 ```bash
