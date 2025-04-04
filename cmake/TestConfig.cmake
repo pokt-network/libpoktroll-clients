@@ -4,7 +4,7 @@ include(FindPkgConfig)
 pkg_check_modules(PROTOBUFC REQUIRED libprotobuf-c)
 
 # Set test-specific paths
-set(LIBPOKTROLL_CLIENTS_TESTS ${CMAKE_SOURCE_DIR}/tests/test_main.c)
+set(LIBPOCKET_CLIENTS_TESTS ${CMAKE_SOURCE_DIR}/tests/test_main.c)
 set(UNITY_DIR ${CMAKE_SOURCE_DIR}/libs/unity/src)
 set(UNITY_SRC ${UNITY_DIR}/unity.c)
 set(PROTO_GEN_DIR ${CMAKE_SOURCE_DIR}/gen)
@@ -22,8 +22,8 @@ include_directories(
 
 # Add your test executable
 add_executable(libpoktroll_clients_tests
-        ${LIBPOKTROLL_CLIENTS_SRC}
-        ${LIBPOKTROLL_CLIENTS_TESTS}
+        ${LIBPOCKET_CLIENTS_SRC}
+        ${LIBPOCKET_CLIENTS_TESTS}
         ${UNITY_SRC}
         ${PROTO_SOURCES}
 )
@@ -48,4 +48,4 @@ set_target_properties(libpoktroll_clients_tests PROPERTIES
 
 # Enable testing and add the test
 enable_testing()
-add_test(NAME LibPoktrollTests COMMAND libpoktroll_clients_tests)
+add_test(NAME LibPocketTests COMMAND libpoktroll_clients_tests)

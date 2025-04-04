@@ -48,6 +48,10 @@ func NewTxClient(depsRef C.go_ref, signingKeyName *C.char, cErr **C.char) C.go_r
 	}
 
 	signingKeyOpt := tx.WithSigningKeyName(C.GoString(signingKeyName))
+	// TODO_IN_THIS_COMMIT: clean up!
+	// C.uint64_t(200000)
+    // gasLimitOpt := tx.WithGasLimit(200000)
+    // txClient, err := tx.NewTxClient(ctx, deps, signingKeyOpt, gasLimitOpt)
 	txClient, err := tx.NewTxClient(ctx, deps, signingKeyOpt)
 	if err != nil {
 		*cErr = C.CString(err.Error())

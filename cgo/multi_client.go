@@ -37,7 +37,7 @@ func NewMultiQueryClient(deps depinject.Config, queryNodeRPCURL string) (MultiQu
 	// on whether the test using it is running in tilt or not.
 	flagSet.String(flags.FlagNode, queryNodeRPCURL, "")
 	flagSet.String(flags.FlagHome, "", homedir)
-	flagSet.String(flags.FlagChainID, app.Name, "use poktroll chain-id")
+	flagSet.String(flags.FlagChainID, app.Name, "use pocket chain-id")
 	err := flagSet.Parse([]string{})
 	if err != nil {
 		return nil, err
@@ -109,7 +109,7 @@ func NewMultiQueryClient(deps depinject.Config, queryNodeRPCURL string) (MultiQu
 	}, nil
 }
 
-// queryClient composes all poktroll module query clients.
+// queryClient composes all pocket module query clients.
 type queryClient struct {
 	client.AccountQueryClient
 	client.BankQueryClient
