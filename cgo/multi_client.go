@@ -6,13 +6,20 @@ import (
 	"cosmossdk.io/depinject"
 	cosmosclient "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	cosmostypes "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/pokt-network/poktroll/app"
+	"github.com/pokt-network/poktroll/pkg/cache/memory"
 	"github.com/pokt-network/poktroll/pkg/client"
 	"github.com/pokt-network/poktroll/pkg/client/query"
+	"github.com/pokt-network/poktroll/pkg/client/query/cache"
+	"github.com/pokt-network/poktroll/pkg/polylog/polyzero"
+	apptypes "github.com/pokt-network/poktroll/x/application/types"
 	prooftypes "github.com/pokt-network/poktroll/x/proof/types"
+	servicetypes "github.com/pokt-network/poktroll/x/service/types"
 	sessiontypes "github.com/pokt-network/poktroll/x/session/types"
 	sharedtypes "github.com/pokt-network/poktroll/x/shared/types"
+	suppliertypes "github.com/pokt-network/poktroll/x/supplier/types"
 	"github.com/spf13/pflag"
 )
 
@@ -48,7 +55,101 @@ func NewMultiQueryClient(deps depinject.Config, queryNodeRPCURL string) (MultiQu
 		return nil, err
 	}
 
-	deps = depinject.Configs(deps, depinject.Supply(clientCtx))
+	// TODO_IN_FUTURE_RELEASE: Support and injectable logger.
+	logger := polyzero.NewLogger()
+
+	// TODO_IN_THIS_RELEASE: Refactor supply functions...
+	accountCache, err := memory.NewKeyValueCache[cosmostypes.AccountI]()
+	if err != nil {
+		return nil, err
+	}
+
+	balancesCache, err := memory.NewKeyValueCache[query.Balance]()
+	if err != nil {
+		return nil, err
+	}
+
+	blockHashCache, err := memory.NewKeyValueCache[query.BlockHash]()
+	if err != nil {
+		return nil, err
+	}
+
+	appCache, err := memory.NewKeyValueCache[apptypes.Application]()
+	if err != nil {
+		return nil, err
+	}
+
+	supplierCache, err := memory.NewKeyValueCache[sharedtypes.Supplier]()
+	if err != nil {
+		return nil, err
+	}
+
+	sessionsCache, err := memory.NewKeyValueCache[*sessiontypes.Session]()
+	if err != nil {
+		return nil, err
+	}
+
+	servicesCache, err := memory.NewKeyValueCache[sharedtypes.Service]()
+	if err != nil {
+		return nil, err
+	}
+
+	relayMiningDifficultyCache, err := memory.NewKeyValueCache[servicetypes.RelayMiningDifficulty]()
+	if err != nil {
+		return nil, err
+	}
+
+	claimsCache, err := memory.NewKeyValueCache[prooftypes.Claim]()
+	if err != nil {
+		return nil, err
+	}
+
+	sharedParamsCache, err := cache.NewParamsCache[sharedtypes.Params]()
+	if err != nil {
+		return nil, err
+	}
+
+	appParamsCache, err := cache.NewParamsCache[apptypes.Params]()
+	if err != nil {
+		return nil, err
+	}
+
+	supplierParamsCache, err := cache.NewParamsCache[suppliertypes.Params]()
+	if err != nil {
+		return nil, err
+	}
+
+	sessionParamsCache, err := cache.NewParamsCache[sessiontypes.Params]()
+	if err != nil {
+		return nil, err
+	}
+
+	proofParamsCache, err := cache.NewParamsCache[prooftypes.Params]()
+	if err != nil {
+		return nil, err
+	}
+
+	deps = depinject.Configs(
+		deps,
+		depinject.Supply(
+			clientCtx,
+			logger,
+			accountCache,
+			balancesCache,
+			blockHashCache,
+			appCache,
+			supplierCache,
+			sessionsCache,
+			servicesCache,
+			claimsCache,
+			relayMiningDifficultyCache,
+			sharedParamsCache,
+			appParamsCache,
+			supplierParamsCache,
+			sessionParamsCache,
+			proofParamsCache,
+		),
+	)
 
 	accountQuerier, err := query.NewAccountQuerier(deps)
 	if err != nil {
@@ -80,6 +181,7 @@ func NewMultiQueryClient(deps depinject.Config, queryNodeRPCURL string) (MultiQu
 		return nil, err
 	}
 
+	deps = depinject.Configs(deps, depinject.Supply(sharedQuerier))
 	sessionQuerier, err := query.NewSessionQuerier(deps)
 	if err != nil {
 		return nil, err
