@@ -51,14 +51,10 @@ func init() {
 		&Marshaler,
 		&InterfaceRegistry,
 	); err != nil {
+		errMsg := err.Error()
+		_ = errMsg
 		panic(err)
 	}
-
-	//// If VALIDATOR_RPC_ENDPOINT environment variable is set, use it to override the default localnet endpoint.
-	//if endpoint := os.Getenv("VALIDATOR_RPC_ENDPOINT"); endpoint != "" {
-	//	CometLocalTCPURL = fmt.Sprintf("tcp://%s", endpoint)
-	//	CometLocalWebsocketURL = fmt.Sprintf("ws://%s/websocket", endpoint)
-	//}
 }
 
 // TODO_IN_THIS_COMMIT: godoc...
@@ -67,12 +63,6 @@ func init() {
 //
 //export NewTxContext
 func NewTxContext(tcpURL *C.char, cErr **C.char) C.go_ref {
-	//deps, err := GetGoMem[depinject.Config](depsRef)
-	//if err != nil {
-	//	*cErr = C.CString(err.Error())
-	//	return 0
-	//}
-
 	flagSet, err := newFlagSet(C.GoString(tcpURL))
 	if err != nil {
 		*cErr = C.CString(err.Error())
@@ -84,6 +74,16 @@ func NewTxContext(tcpURL *C.char, cErr **C.char) C.go_ref {
 		*cErr = C.CString(err.Error())
 		return 0
 	}
+
+	// TODO_IN_THIS_COMMIT: parameterize!
+	keyring, err := client.NewKeyringFromBackend(clientCtx, "test")
+	if err != nil {
+		*cErr = C.CString(err.Error())
+		return 0
+	}
+
+	clientCtx = clientCtx.WithKeyring(keyring)
+	// ---
 
 	txFactory, err := cosmostx.NewFactoryCLI(clientCtx, flagSet)
 	if err != nil {

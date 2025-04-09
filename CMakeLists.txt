@@ -58,9 +58,9 @@ endif ()
 
 add_custom_command(
         OUTPUT ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION}
-        COMMAND ${CMAKE_COMMAND} -E env GOOS=${GO_OS} GOARCH=${GO_ARCH} CGO_ENABLED=1
+        COMMAND ${CMAKE_COMMAND} -E env GOOS=${GO_OS} GOARCH=${GO_ARCH} CGO_ENABLED=1 CGO_DEBUG=1 CGO_CFLAGS=-g
         ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/cgo
-        go build -v -o ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION} -buildmode=c-shared .
+        go build -v -gcflags "all=-N -l" -o ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION} -buildmode=c-shared .
         DEPENDS ${GO_SOURCES}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         VERBATIM

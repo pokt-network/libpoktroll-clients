@@ -194,7 +194,12 @@ static void test_tx_client(void)
     TEST_ASSERT_EQUAL_STRING("", err);
 
     char* signingKeyName = "faucet";
-    const go_ref txClientRef = NewTxClient(supplyCfgRef, signingKeyName, &err);
+    const go_ref txClientRef = NewTxClient(
+        supplyCfgRef,
+        signingKeyName,
+        NULL,
+        &err
+    );
     TEST_ASSERT_EQUAL_STRING("", err);
     TEST_ASSERT_NOT_EQUAL_INT64(txClientRef, -1);
     TEST_ASSERT_NOT_EQUAL_INT64(txClientRef, 0);
@@ -240,7 +245,12 @@ static void test_sign_and_broadcast_success(void)
     const go_ref supplyCfgRef = getTxClientDeps(&err);
     TEST_ASSERT_EQUAL_STRING("", err);
 
-    const go_ref txClientRef = NewTxClient(supplyCfgRef, "app3", &err);
+    const go_ref txClientRef = NewTxClient(
+        supplyCfgRef,
+        "app3",
+        NULL,
+        &err
+    );
     TEST_ASSERT_EQUAL_STRING("", err);
 
     // Set up async context
@@ -321,7 +331,7 @@ static void test_sign_and_broadcast_sync_error(void)
     TEST_ASSERT_EQUAL_STRING("", err);
 
     // Construct the tx client with the WRONG signing key.
-    const go_ref txClientRef = NewTxClient(supplyCfgRef, "pnf", &err);
+    const go_ref txClientRef = NewTxClient(supplyCfgRef, "pnf", NULL, &err);
     TEST_ASSERT_EQUAL_STRING("", err);
 
     // Set up async context
@@ -395,7 +405,7 @@ static void test_sign_and_broadcast_async_error(void)
     const go_ref supply_cfg_ref = getTxClientDeps(&err);
     TEST_ASSERT_EQUAL_STRING("", err);
 
-    const go_ref tx_client_ref = NewTxClient(supply_cfg_ref, "app3", &err);
+    const go_ref tx_client_ref = NewTxClient(supply_cfg_ref, "app3", NULL, &err);
     TEST_ASSERT_EQUAL_STRING("", err);
 
     // Set up async context
