@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.24)
 project(libpoktroll_clients VERSION 0.2.0)
 
 # Add option for building tests
-option(BUILD_TESTS "Build test programs" OFF)
+option(BUILD_TESTS "Build test programs" ON)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
@@ -23,9 +23,9 @@ else ()
 endif ()
 
 # Define paths
-set(CLIENTS_SHARED_LIB ${CMAKE_SOURCE_DIR}/cgo/build/${LIB_PREFIX}poktroll_clients)
+set(CLIENTS_SHARED_LIB ${CMAKE_SOURCE_DIR}/cgo/build/${LIB_PREFIX}pocket_clients)
 
-set(LIBPOKTROLL_CLIENTS_SRC ${CMAKE_SOURCE_DIR}/src/context.c)
+set(LIBPOCKET_CLIENTS_SRC ${CMAKE_SOURCE_DIR}/src/context.c)
 
 # Include directories
 include_directories(
@@ -71,7 +71,7 @@ add_custom_target(build_go_shared_lib
         DEPENDS ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION}
 )
 
-add_custom_target(poktroll_clients ALL
+add_custom_target(pocket_clients ALL
         COMMAND ${CMAKE_COMMAND} -E copy ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION} ${CMAKE_BINARY_DIR}/libpoktroll_clients.${LIB_EXTENSION}.${PROJECT_VERSION}
         COMMAND ${CMAKE_COMMAND} -E create_symlink libpoktroll_clients.${LIB_EXTENSION}.${PROJECT_VERSION} ${CMAKE_BINARY_DIR}/libpoktroll_clients.${LIB_EXTENSION}
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/cgo/build/libpoktroll_clients.h ${CMAKE_BINARY_DIR}/libpoktroll_clients.h
@@ -80,19 +80,19 @@ add_custom_target(poktroll_clients ALL
 
 # Set library properties for versioning and naming
 if (WIN32)
-    set_target_properties(poktroll_clients PROPERTIES
+    set_target_properties(pocket_clients PROPERTIES
             VERSION ${PROJECT_VERSION}
             PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/include/context.h"
-            OUTPUT_NAME "poktroll_clients"
+            OUTPUT_NAME "pocket_clients"
             PREFIX ""
             IMPORT_PREFIX ""
     )
 else ()
-    set_target_properties(poktroll_clients PROPERTIES
+    set_target_properties(pocket_clients PROPERTIES
             VERSION ${PROJECT_VERSION}
             SOVERSION ${PROJECT_VERSION_MAJOR}
             PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/include/context.h"
-            OUTPUT_NAME "poktroll_clients"
+            OUTPUT_NAME "pocket_clients"
             PREFIX "lib"
     )
 endif ()

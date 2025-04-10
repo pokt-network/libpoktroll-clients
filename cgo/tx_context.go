@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/pokt-network/poktroll/app"
-	"github.com/pokt-network/poktroll/cmd/poktrolld/cmd"
+	"github.com/pokt-network/poktroll/cmd/pocketd/cmd"
 	"github.com/pokt-network/poktroll/pkg/client/tx"
 	txtypes "github.com/pokt-network/poktroll/pkg/client/tx/types"
 )
@@ -115,7 +115,7 @@ func newFlagSet(tcpURL string) (*pflag.FlagSet, error) {
 	// ---
 
 	flagSet.String(flags.FlagNode, tcpURL, "")
-	flagSet.String(flags.FlagChainID, app.Name, "use poktroll chain-id")
+	flagSet.String(flags.FlagChainID, app.Name, "use pocket chain-id")
 	if err := flagSet.Parse([]string{}); err != nil {
 		return nil, err
 	}

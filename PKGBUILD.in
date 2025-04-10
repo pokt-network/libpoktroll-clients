@@ -16,7 +16,7 @@ package() {
     cd "$srcdir/$pkgname-$pkgver-@ARCH@-linux"
 
     # Install headers
-    install -Dm644 include/poktroll/context.h "$pkgdir/usr/include/poktroll/context.h"
+    install -Dm644 include/pocket/context.h "$pkgdir/usr/include/pocket/context.h"
 
     # Install libraries with proper naming
     install -Dm755 lib/libpoktroll_clients.so.$pkgver "$pkgdir/usr/lib/libpoktroll_clients.so.$pkgver"

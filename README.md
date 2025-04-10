@@ -1,6 +1,6 @@
 # `libpoktroll` - C Clients Shared Library
 
-An asynchronous, cross-platform C API which wraps the [`poktroll` client packages](https://pkg.go.dev/github.com/pokt-network/poktroll/pkg/client) (via [cgo](https://pkg.go.dev/cmd/cgo) wrapper functions).
+An asynchronous, cross-platform C API which wraps the [`pocket` client packages](https://pkg.go.dev/github.com/pokt-network/poktroll/pkg/client) (via [cgo](https://pkg.go.dev/cmd/cgo) wrapper functions).
 
 ## Table of contents <!-- omit in toc -->
 
@@ -46,7 +46,7 @@ cd libpoktroll_clients
 git submodule update --init --recursive
 
 # (optional) Update protobufs ("pull" from buf.build)
-buf export buf.build/pokt-network/poktroll
+buf export buf.build/pokt-network/pocket
 
 # Generate protobufs
 buf generate
@@ -59,7 +59,7 @@ cd build
 cmake ..
 make
 
-# Run tests (requires running poktroll localnet.
+# Run tests (requires running pocket localnet.
 # (see: https://dev.poktroll.com/develop/developer_guide/quickstart#1-launch--inspect-localnet)
 ctest --output-on-failure
 ```

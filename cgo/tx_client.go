@@ -7,15 +7,29 @@ package main
 #include <protobuf.h>
 #include <context.h>
 #include <callback.h>
+#include <string.h>
 
 static void bridge_success(AsyncOperation *op, void *results) {
     if (op && op->on_success) {
+		op->ctx->completed = true;
+		op->ctx->success = true;
+		op->ctx->data = results;
+		op->ctx->data_len = sizeof(results);
+
         op->on_success(op->ctx, results);
     }
 }
 
 static void bridge_error(AsyncOperation *op, char *err) {
     if (op && op->on_error) {
+		op->ctx->completed = true;
+		op->ctx->success = false;
+		//op->ctx->error_msg = err;
+		// TODO_IN_THIS_COMMIT: comment and/or debug - copy the array size - zero-initialized?
+		memcpy(op->ctx->error_msg, err, 256);
+		// TODO_IN_THIS_COMMIT: existing error codes?
+		op->ctx->error_code = 1;
+
         op->on_error(op->ctx, err);
     }
 }
@@ -48,6 +62,10 @@ func NewTxClient(depsRef C.go_ref, signingKeyName *C.char, cErr **C.char) C.go_r
 	}
 
 	signingKeyOpt := tx.WithSigningKeyName(C.GoString(signingKeyName))
+	// TODO_IN_THIS_COMMIT: clean up!
+	// C.uint64_t(200000)
+    // gasLimitOpt := tx.WithGasLimit(200000)
+    // txClient, err := tx.NewTxClient(ctx, deps, signingKeyOpt, gasLimitOpt)
 	txClient, err := tx.NewTxClient(ctx, deps, signingKeyOpt)
 	if err != nil {
 		*cErr = C.CString(err.Error())

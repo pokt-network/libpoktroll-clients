@@ -18,7 +18,7 @@ install(FILES ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION}
 
 # Install headers
 install(FILES ${CMAKE_SOURCE_DIR}/include/context.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/poktroll
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/pocket
         COMPONENT headers
 )
 

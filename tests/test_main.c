@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "libpoktroll_clients.h"
+#include "libpocket_clients.h"
 #include "unity.h"
-#include "poktroll/application/tx.pb-c.h"
+#include "pocket/application/tx.pb-c.h"
 
-static const char* msg_stake_application_type_url = "poktroll.application.MsgStakeApplication";
+static const char* msg_stake_application_type_url = "pocket.application.MsgStakeApplication";
 
 static void test_events_query_client(void)
 {
@@ -54,7 +54,7 @@ static void test_block_query_client(void)
     TEST_ASSERT_NOT_EQUAL_INT64(clientRef, -1);
     TEST_ASSERT_NOT_EQUAL_INT64(clientRef, 0);
 
-    const go_ref blockRef = BlockQuery_ClientBlock(clientRef, NULL, &err);
+    const go_ref blockRef = BlockQueryClient_Block(clientRef, NULL, &err);
     TEST_ASSERT_EQUAL_STRING("", err);
     TEST_ASSERT_NOT_EQUAL_INT64(blockRef, -1);
     TEST_ASSERT_NOT_EQUAL_INT64(blockRef, 0);
@@ -209,7 +209,7 @@ static void test_sign_and_broadcast_success(void)
     char* err = calloc(1024, sizeof(char));
 
     // Create and populate the message
-    Poktroll__Application__MsgStakeApplication msg = POKTROLL__APPLICATION__MSG_STAKE_APPLICATION__INIT;
+    Pocket__Application__MsgStakeApplication msg = POCKET__APPLICATION__MSG_STAKE_APPLICATION__INIT;
 
     // Stake application 3
     msg.address = "pokt1lqyu4v88vp8tzc86eaqr4lq8rwhssyn6rfwzex";
@@ -217,24 +217,24 @@ static void test_sign_and_broadcast_success(void)
     // Create and set the stake coin
     Cosmos__Base__V1beta1__Coin app_stake = COSMOS__BASE__V1BETA1__COIN__INIT;
     app_stake.denom = "upokt";
-    app_stake.amount = "100000000"; // 1000 POKT
+    app_stake.amount = "100000069"; // 1000 POKT
     msg.stake = &app_stake;
 
     // Create service configs
-    Poktroll__Shared__ApplicationServiceConfig service = POKTROLL__SHARED__APPLICATION_SERVICE_CONFIG__INIT;
+    Pocket__Shared__ApplicationServiceConfig service = POCKET__SHARED__APPLICATION_SERVICE_CONFIG__INIT;
     service.service_id = "anvil";
 
     // Allocate array for services
     msg.n_services = 1;
-    msg.services = malloc(sizeof(Poktroll__Shared__ApplicationServiceConfig*));
+    msg.services = malloc(sizeof(Pocket__Shared__ApplicationServiceConfig*));
     msg.services[0] = &service;
 
     // Calculate the serialized size
-    size_t msg_bz_len = poktroll__application__msg_stake_application__get_packed_size(&msg);
+    size_t msg_bz_len = pocket__application__msg_stake_application__get_packed_size(&msg);
 
     // Allocate buffer and serialize
     uint8_t* msg_bz = malloc(msg_bz_len);
-    poktroll__application__msg_stake_application__pack(&msg, msg_bz);
+    pocket__application__msg_stake_application__pack(&msg, msg_bz);
 
     // Get dependencies for tx client
     const go_ref supplyCfgRef = getTxClientDeps(&err);
@@ -289,7 +289,7 @@ static void test_sign_and_broadcast_sync_error(void)
     char* err = calloc(1024, sizeof(char));
 
     // Create and populate the message
-    Poktroll__Application__MsgStakeApplication msg = POKTROLL__APPLICATION__MSG_STAKE_APPLICATION__INIT;
+    Pocket__Application__MsgStakeApplication msg = POCKET__APPLICATION__MSG_STAKE_APPLICATION__INIT;
 
     // Set the application address
     msg.address = "pokt1lqyu4v88vp8tzc86eaqr4lq8rwhssyn6rfwzex";
@@ -297,24 +297,24 @@ static void test_sign_and_broadcast_sync_error(void)
     // Create and set the stake coin with amount that should trigger error
     Cosmos__Base__V1beta1__Coin stake = COSMOS__BASE__V1BETA1__COIN__INIT;
     stake.denom = "upokt";
-    stake.amount = "100000068"; // Amount equal to previous stake
+    stake.amount = "100000069"; // Amount equal to previous stake
     msg.stake = &stake;
 
     // Create service configs
-    Poktroll__Shared__ApplicationServiceConfig service1 = POKTROLL__SHARED__APPLICATION_SERVICE_CONFIG__INIT;
+    Pocket__Shared__ApplicationServiceConfig service1 = POCKET__SHARED__APPLICATION_SERVICE_CONFIG__INIT;
     service1.service_id = "svc_123";
 
     // Allocate array for services
     msg.n_services = 1;
-    msg.services = malloc(sizeof(Poktroll__Shared__ApplicationServiceConfig*));
+    msg.services = malloc(sizeof(Pocket__Shared__ApplicationServiceConfig*));
     msg.services[0] = &service1;
 
     // Calculate the serialized size
-    size_t msg_bz_len = poktroll__application__msg_stake_application__get_packed_size(&msg);
+    size_t msg_bz_len = pocket__application__msg_stake_application__get_packed_size(&msg);
 
     // Allocate buffer and serialize
     uint8_t* msg_bz = malloc(msg_bz_len);
-    poktroll__application__msg_stake_application__pack(&msg, msg_bz);
+    pocket__application__msg_stake_application__pack(&msg, msg_bz);
 
     // Get dependencies for tx client
     const go_ref supplyCfgRef = getTxClientDeps(&err);
@@ -364,7 +364,7 @@ static void test_sign_and_broadcast_async_error(void)
     char* err = calloc(1024, sizeof(char));
 
     // Create and populate the message
-    Poktroll__Application__MsgStakeApplication msg = POKTROLL__APPLICATION__MSG_STAKE_APPLICATION__INIT;
+    Pocket__Application__MsgStakeApplication msg = POCKET__APPLICATION__MSG_STAKE_APPLICATION__INIT;
 
     // Set the application address
     msg.address = "pokt1lqyu4v88vp8tzc86eaqr4lq8rwhssyn6rfwzex";
@@ -372,24 +372,24 @@ static void test_sign_and_broadcast_async_error(void)
     // Create and set the stake coin with amount that should trigger error
     Cosmos__Base__V1beta1__Coin stake = COSMOS__BASE__V1BETA1__COIN__INIT;
     stake.denom = "upokt";
-    stake.amount = "100000068"; // Amount equal to previous stake
+    stake.amount = "100000069"; // Amount equal to previous stake
     msg.stake = &stake;
 
     // Create service configs
-    Poktroll__Shared__ApplicationServiceConfig service1 = POKTROLL__SHARED__APPLICATION_SERVICE_CONFIG__INIT;
+    Pocket__Shared__ApplicationServiceConfig service1 = POCKET__SHARED__APPLICATION_SERVICE_CONFIG__INIT;
     service1.service_id = "svc_123";
 
     // Allocate array for services
     msg.n_services = 1;
-    msg.services = malloc(sizeof(Poktroll__Shared__ApplicationServiceConfig*));
+    msg.services = malloc(sizeof(Pocket__Shared__ApplicationServiceConfig*));
     msg.services[0] = &service1;
 
     // Calculate the serialized size
-    size_t msg_bz_len = poktroll__application__msg_stake_application__get_packed_size(&msg);
+    size_t msg_bz_len = pocket__application__msg_stake_application__get_packed_size(&msg);
 
     // Allocate buffer and serialize
     uint8_t* msg_bz = malloc(msg_bz_len);
-    poktroll__application__msg_stake_application__pack(&msg, msg_bz);
+    pocket__application__msg_stake_application__pack(&msg, msg_bz);
 
     // Get dependencies for tx client
     const go_ref supply_cfg_ref = getTxClientDeps(&err);
@@ -411,7 +411,7 @@ static void test_sign_and_broadcast_async_error(void)
 
     // Send the message
     serialized_proto serialized_msg = {
-        // .type_url = "poktroll.application.MsgStakeApplication",
+        // .type_url = "pocket.application.MsgStakeApplication",
         .type_url = (uint8_t*)msg_stake_application_type_url,
         .type_url_length = strlen(msg_stake_application_type_url),
         .data = msg_bz,

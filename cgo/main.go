@@ -40,7 +40,7 @@ func init() {
 // TODO_IN_THIS_COMMIT: godoc...
 func registerAllModuleInterfaces() {
 	registerCosmosModuleInterfaces()
-	registerPoktrollModuleInterfaces()
+	registerPocketModuleInterfaces()
 }
 
 // TODO_IN_THIS_COMMIT: godoc...
@@ -51,7 +51,7 @@ func registerCosmosModuleInterfaces() {
 }
 
 // TODO_IN_THIS_COMMIT: godoc...
-func registerPoktrollModuleInterfaces() {
+func registerPocketModuleInterfaces() {
 	appmodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
 	gatewaymodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
 	proofmodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
