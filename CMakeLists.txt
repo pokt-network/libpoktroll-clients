@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(libpoktroll_clients VERSION 0.2.0)
+project(libpocket_clients VERSION 0.2.0)
 
 # Add option for building tests
 option(BUILD_TESTS "Build test programs" ON)
@@ -72,9 +72,9 @@ add_custom_target(build_go_shared_lib
 )
 
 add_custom_target(pocket_clients ALL
-        COMMAND ${CMAKE_COMMAND} -E copy ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION} ${CMAKE_BINARY_DIR}/libpoktroll_clients.${LIB_EXTENSION}.${PROJECT_VERSION}
-        COMMAND ${CMAKE_COMMAND} -E create_symlink libpoktroll_clients.${LIB_EXTENSION}.${PROJECT_VERSION} ${CMAKE_BINARY_DIR}/libpoktroll_clients.${LIB_EXTENSION}
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/cgo/build/libpoktroll_clients.h ${CMAKE_BINARY_DIR}/libpoktroll_clients.h
+        COMMAND ${CMAKE_COMMAND} -E copy ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION} ${CMAKE_BINARY_DIR}/libpocket_clients.${LIB_EXTENSION}.${PROJECT_VERSION}
+        COMMAND ${CMAKE_COMMAND} -E create_symlink libpocket_clients.${LIB_EXTENSION}.${PROJECT_VERSION} ${CMAKE_BINARY_DIR}/libpocket_clients.${LIB_EXTENSION}
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/cgo/build/libpocket_clients.h ${CMAKE_BINARY_DIR}/libpocket_clients.h
         DEPENDS ${CLIENTS_SHARED_LIB}.${LIB_EXTENSION}
 )
 
