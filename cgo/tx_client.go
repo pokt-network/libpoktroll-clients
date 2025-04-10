@@ -87,7 +87,7 @@ func NewTxClient(
 		*cErr = C.CString(err.Error())
 		return C.go_ref(NilGoRef)
 	}
-	
+
 	return SetGoMem(txClient)
 }
 
@@ -232,18 +232,12 @@ func TxClient_SignAndBroadcastMany(
 	_, eitherAsyncErr := txClient.SignAndBroadcast(goCtx, msgs...)
 	err, errCh := eitherAsyncErr.SyncOrAsyncError()
 	if err != nil {
-		errMsg := fmt.Sprintf(">>>>> async error: %s\n", err)
-		_ = errMsg
-		fmt.Printf(errMsg)
 		C.bridge_error(op, C.CString(err.Error()))
 		return C.go_ref(NilGoRef)
 	}
 
 	go func() {
 		if err = <-errCh; err != nil {
-			errMsg := fmt.Sprintf(">>>>> async error: %s\n", err)
-			_ = errMsg
-			fmt.Printf(errMsg)
 			C.bridge_error(op, C.CString(err.Error()))
 		} else {
 			C.bridge_success(op, nil)
