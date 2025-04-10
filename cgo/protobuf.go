@@ -30,9 +30,9 @@ func CProtoMessageArrayToGoProtoMessages(cArray *C.proto_message_array) (msgs []
 
 	// Convert each message to SerializedProto struct.
 	for _, cSerializedProto := range cSerializedProtos {
-		serializedProto := &SerializedProto{
-			TypeUrl: C.GoBytes(unsafe.Pointer(cSerializedProto.type_url), C.int(cSerializedProto.type_url_length)),
-			Data:    C.GoBytes(unsafe.Pointer(cSerializedProto.data), C.int(cSerializedProto.data_length)),
+		serializedProto, err := CSerializedProtoToGoSerializedProto(&cSerializedProto)
+		if err != nil {
+			return nil, err
 		}
 
 		msg, err := SerializedProtoToProtoMessage(serializedProto)
@@ -44,6 +44,16 @@ func CProtoMessageArrayToGoProtoMessages(cArray *C.proto_message_array) (msgs []
 	}
 
 	return msgs, nil
+}
+
+// TODO_IN_THIS_COMMIT: move & godoc...
+func CSerializedProtoToGoSerializedProto(cSerializedProto *C.serialized_proto) (*SerializedProto, error) {
+	serializedProto := &SerializedProto{
+		TypeUrl: C.GoBytes(unsafe.Pointer(cSerializedProto.type_url), C.int(cSerializedProto.type_url_length)),
+		Data:    C.GoBytes(unsafe.Pointer(cSerializedProto.data), C.int(cSerializedProto.data_length)),
+	}
+
+	return serializedProto, nil
 }
 
 // TODO_IN_THIS_COMMIT: move & godoc...
@@ -106,6 +116,7 @@ func GetGoProtoAsSerializedProto(ref C.go_ref, cErr **C.char) unsafe.Pointer {
 	return cSerializedProto
 }
 
+// TODO_IN_THIS_COMMIT: godoc...
 func CSerializedProtoFromGoProto(value gogoproto.Message) (unsafe.Pointer, error) {
 	typeURL := []byte(cosmostypes.MsgTypeURL(value))
 	proto_bz, err := cdc.Marshal(value)

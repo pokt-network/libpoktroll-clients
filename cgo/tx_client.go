@@ -8,6 +8,7 @@ package main
 #include <context.h>
 #include <callback.h>
 #include <string.h>
+#include <gas.h>
 
 static void bridge_success(AsyncOperation *op, void *results) {
     if (op && op->on_success) {
@@ -42,16 +43,26 @@ import (
 	"unsafe"
 
 	"cosmossdk.io/depinject"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	cosmostypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pokt-network/poktroll/pkg/client"
 	"github.com/pokt-network/poktroll/pkg/client/tx"
 )
 
 // TODO_IMPROVE: add separate constructor which supports options...
 
+//// TODO_IN_THIS_COMMIT: godoc & move...
+//func
+
 // TODO_IN_THIS_COMMIT: godoc...
 //
 //export NewTxClient
-func NewTxClient(depsRef C.go_ref, signingKeyName *C.char, cErr **C.char) C.go_ref {
+func NewTxClient(
+	depsRef C.go_ref,
+	signingKeyName *C.char,
+	gasSetting *C.gas_settings,
+	cErr **C.char,
+) C.go_ref {
 	// TODO_CONSIDERATION: Could support a version of methods which receive a go context, created elsewhere..
 	ctx := context.Background()
 
@@ -61,18 +72,71 @@ func NewTxClient(depsRef C.go_ref, signingKeyName *C.char, cErr **C.char) C.go_r
 		return C.go_ref(NilGoRef)
 	}
 
-	signingKeyOpt := tx.WithSigningKeyName(C.GoString(signingKeyName))
-	// TODO_IN_THIS_COMMIT: clean up!
-	// C.uint64_t(200000)
-    // gasLimitOpt := tx.WithGasLimit(200000)
-    // txClient, err := tx.NewTxClient(ctx, deps, signingKeyOpt, gasLimitOpt)
-	txClient, err := tx.NewTxClient(ctx, deps, signingKeyOpt)
+	gasAndFeesOpts, err := getTxClientGasAndFeesOptions(gasSetting)
+	if err != nil {
+		*cErr = C.CString(err.Error())
+		return C.go_ref(NilGoRef)
+	}
+
+	opts := append(
+		gasAndFeesOpts,
+		tx.WithSigningKeyName(C.GoString(signingKeyName)),
+	)
+	txClient, err := tx.NewTxClient(ctx, deps, opts...)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return C.go_ref(NilGoRef)
 	}
 
 	return SetGoMem(txClient)
+}
+
+// TODO_IN_THIS_COMMIT: godoc & move...
+func getTxClientGasAndFeesOptions(cGasSetting *C.gas_settings) ([]client.TxClientOption, error) {
+	var gasSettingTxClientOptions []client.TxClientOption
+
+	if unsafe.Pointer(cGasSetting.fees) != C.NULL {
+		fees, err := cosmostypes.ParseDecCoins(C.GoString(cGasSetting.fees))
+		if err != nil {
+			return nil, err
+		}
+
+		gasSettingTxClientOptions = append(
+			gasSettingTxClientOptions,
+			tx.WithFeeAmount(&fees),
+		)
+	}
+
+	gasPrices, err := cosmostypes.ParseDecCoins(C.GoString(cGasSetting.gas_prices))
+	if err != nil {
+		return nil, err
+	}
+
+	gasSettingTxClientOptions = append(
+		gasSettingTxClientOptions,
+		tx.WithGasAdjustment(float64(cGasSetting.gas_adjustment)),
+		tx.WithGasPrices(&gasPrices),
+	)
+
+	if cGasSetting.simulate {
+		gasSettingTxClientOptions = append(
+			gasSettingTxClientOptions,
+			tx.WithGasSetting(&flags.GasSetting{
+				Simulate: true,
+				Gas:      uint64(cGasSetting.gas_limit),
+			}),
+		)
+	} else {
+		gasSettingTxClientOptions = append(
+			gasSettingTxClientOptions,
+			tx.WithGasSetting(&flags.GasSetting{
+				Simulate: false,
+				Gas:      uint64(cGasSetting.gas_limit),
+			}),
+		)
+	}
+
+	return gasSettingTxClientOptions, nil
 }
 
 //export WithSigningKeyName
@@ -116,7 +180,8 @@ func TxClient_SignAndBroadcast(
 		return C.go_ref(NilGoRef)
 	}
 
-	eitherAsyncErr := txClient.SignAndBroadcast(goCtx, msg)
+	// TODO_IN_THIS_COMMIT: add a TxResponse data structure and return it...
+	_, eitherAsyncErr := txClient.SignAndBroadcast(goCtx, msg)
 	err, errCh := eitherAsyncErr.SyncOrAsyncError()
 	if err != nil {
 		C.bridge_error(op, C.CString(err.Error()))
@@ -163,7 +228,8 @@ func TxClient_SignAndBroadcastMany(
 		return C.go_ref(NilGoRef)
 	}
 
-	eitherAsyncErr := txClient.SignAndBroadcast(goCtx, msgs...)
+	// TODO_IN_THIS_COMMIT: add a TxResponse data structure and return it...
+	_, eitherAsyncErr := txClient.SignAndBroadcast(goCtx, msgs...)
 	err, errCh := eitherAsyncErr.SyncOrAsyncError()
 	if err != nil {
 		C.bridge_error(op, C.CString(err.Error()))

@@ -8,6 +8,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	appmodule "github.com/pokt-network/poktroll/x/application/module"
 	gatewaymodule "github.com/pokt-network/poktroll/x/gateway/module"
+	migration "github.com/pokt-network/poktroll/x/migration/module"
 	proofmodule "github.com/pokt-network/poktroll/x/proof/module"
 	servicemodule "github.com/pokt-network/poktroll/x/service/module"
 	sessionmodule "github.com/pokt-network/poktroll/x/session/module"
@@ -52,6 +53,7 @@ func registerCosmosModuleInterfaces() {
 
 // TODO_IN_THIS_COMMIT: godoc...
 func registerPocketModuleInterfaces() {
+	sharedmodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
 	appmodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
 	gatewaymodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
 	proofmodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
@@ -60,4 +62,5 @@ func registerPocketModuleInterfaces() {
 	sharedmodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
 	suppliermodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
 	tokenomicsmodule.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
+	migration.NewAppModuleBasic(cdc).RegisterInterfaces(interfaceRegistry)
 }
