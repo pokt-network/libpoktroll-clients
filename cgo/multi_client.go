@@ -15,6 +15,7 @@ import (
 	"github.com/pokt-network/poktroll/pkg/client/query/cache"
 	"github.com/pokt-network/poktroll/pkg/polylog/polyzero"
 	apptypes "github.com/pokt-network/poktroll/x/application/types"
+	migrationtypes "github.com/pokt-network/poktroll/x/migration/types"
 	prooftypes "github.com/pokt-network/poktroll/x/proof/types"
 	servicetypes "github.com/pokt-network/poktroll/x/service/types"
 	sessiontypes "github.com/pokt-network/poktroll/x/session/types"
@@ -197,6 +198,8 @@ func NewMultiQueryClient(deps depinject.Config, queryNodeRPCURL string) (MultiQu
 		return nil, err
 	}
 
+	migrationQuerier := migrationtypes.NewQueryClient(clientCtx)
+
 	// TODO_OPTIMIZE: lazily initialize these, so that they're only constructed when needed.
 	return &queryClient{
 		AccountQueryClient:     accountQuerier,
@@ -208,6 +211,7 @@ func NewMultiQueryClient(deps depinject.Config, queryNodeRPCURL string) (MultiQu
 		SessionQueryClient:     sessionQuerier,
 		ServiceQueryClient:     serviceQuerier,
 		ProofQueryClient:       proofQuerier,
+		QueryClient:            migrationQuerier,
 	}, nil
 }
 
@@ -222,6 +226,9 @@ type queryClient struct {
 	client.SessionQueryClient
 	client.ServiceQueryClient
 	client.ProofQueryClient
+
+	// TODO_NEXT_RELEASE: add a query client wrapper for the migration module.
+	migrationtypes.QueryClient
 }
 
 // GetSharedParams queries the chain for the current shared module parameters.

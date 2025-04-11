@@ -33,7 +33,12 @@ func LoadMorsePrivateKey(morseKeyExportPath, passphrase *C.char, cErr **C.char) 
 }
 
 //export NewSerializedSignedMsgClaimMorseAccount
-func NewSerializedSignedMsgClaimMorseAccount(cShannonDestAddr *C.char, privKeyRef C.go_ref, cErr **C.char) unsafe.Pointer {
+func NewSerializedSignedMsgClaimMorseAccount(
+	cShannonDestAddr *C.char,
+	privKeyRef C.go_ref,
+	cShannonSigningAddr *C.char,
+	cErr **C.char,
+) unsafe.Pointer {
 	morsePrivKey, err := GetGoMem[ed25519.PrivKey](privKeyRef)
 	if err != nil {
 		*cErr = C.CString(err.Error())
@@ -43,6 +48,7 @@ func NewSerializedSignedMsgClaimMorseAccount(cShannonDestAddr *C.char, privKeyRe
 	msg, err := migrationtypes.NewMsgClaimMorseAccount(
 		C.GoString(cShannonDestAddr),
 		morsePrivKey,
+		C.GoString(cShannonSigningAddr),
 	)
 	if err != nil {
 		*cErr = C.CString(err.Error())
@@ -63,6 +69,7 @@ func NewSerializedSignedMsgClaimMorseApplication(
 	cShannonDestAddr *C.char,
 	privKeyRef C.go_ref,
 	serviceId *C.char,
+	cShannonSigningAddr *C.char,
 	cErr **C.char,
 ) unsafe.Pointer {
 	morsePrivKey, err := GetGoMem[ed25519.PrivKey](privKeyRef)
@@ -77,6 +84,7 @@ func NewSerializedSignedMsgClaimMorseApplication(
 		&sharedtypes.ApplicationServiceConfig{
 			ServiceId: C.GoString(serviceId),
 		},
+		C.GoString(cShannonSigningAddr),
 	)
 	if err != nil {
 		*cErr = C.CString(err.Error())
@@ -97,7 +105,8 @@ func NewSerializedSignedMsgClaimMorseSupplier(
 	cShannonOwnerAddr *C.char,
 	cShannonOperatorAddr *C.char,
 	privKeyRef C.go_ref,
-	cSupplierServiceConfigs *C.proto_message_array,
+	cSupplierServiceConfigs *C.serialized_proto_array,
+	cShannonSigningAddr *C.char,
 	cErr **C.char,
 ) unsafe.Pointer {
 	morsePrivKey, err := GetGoMem[ed25519.PrivKey](privKeyRef)
@@ -106,13 +115,13 @@ func NewSerializedSignedMsgClaimMorseSupplier(
 		return C.NULL
 	}
 
-	supplierServiceConfigsAny, err := CProtoMessageArrayToGoProtoMessages(cSupplierServiceConfigs)
+	supplierServiceConfigsAny, err := CSerializedProtoArrayToGoProtoMessages(cSupplierServiceConfigs)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return C.NULL
 	}
 
-	numSupplierServiceConfigs := int(cSupplierServiceConfigs.num_messages)
+	numSupplierServiceConfigs := int(cSupplierServiceConfigs.num_protos)
 	supplierServiceConfigs := make([]*sharedtypes.SupplierServiceConfig, numSupplierServiceConfigs)
 	for idx := 0; idx < numSupplierServiceConfigs; idx++ {
 		supplierServiceConfigAny := supplierServiceConfigsAny[idx]
@@ -130,6 +139,7 @@ func NewSerializedSignedMsgClaimMorseSupplier(
 		C.GoString(cShannonOperatorAddr),
 		morsePrivKey,
 		supplierServiceConfigs,
+		C.GoString(cShannonSigningAddr),
 	)
 	if err != nil {
 		*cErr = C.CString(err.Error())
@@ -188,7 +198,7 @@ func SignMorseClaimMsg(
 	}
 
 	// Deserialize the message to a go protobuf message.
-	protoMsg, err := SerializedProtoToProtoMessage(serializedProto)
+	protoMsg, err := SerializedProtoToGoProtoMessage(serializedProto)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return

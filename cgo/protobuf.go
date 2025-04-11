@@ -19,14 +19,14 @@ type SerializedProto struct {
 	Data    []byte
 }
 
-// CProtoMessageArrayToGoProtoMessages converts a C proto_message_array into a []proto.Message slice.
-func CProtoMessageArrayToGoProtoMessages(cArray *C.proto_message_array) (msgs []gogoproto.Message, err error) {
-	if cArray == nil || cArray.messages == nil {
-		return nil, fmt.Errorf("invalid proto_message_array: %+v", cArray)
+// CSerializedProtoArrayToGoProtoMessages converts a C proto_message_array into a []proto.Message slice.
+func CSerializedProtoArrayToGoProtoMessages(cSerializedProtosArray *C.serialized_proto_array) (msgs []gogoproto.Message, err error) {
+	if cSerializedProtosArray == nil || cSerializedProtosArray.protos == nil {
+		return nil, fmt.Errorf("invalid proto_message_array: %+v", cSerializedProtosArray)
 	}
 
 	// Convert C.serialized_protos array to slice.
-	cSerializedProtos := GoSliceFromCArray[C.serialized_proto](cArray.messages, int(cArray.num_messages))
+	cSerializedProtos := GoSliceFromCArray[C.serialized_proto](cSerializedProtosArray.protos, int(cSerializedProtosArray.num_protos))
 
 	// Convert each message to SerializedProto struct.
 	for _, cSerializedProto := range cSerializedProtos {
@@ -35,7 +35,7 @@ func CProtoMessageArrayToGoProtoMessages(cArray *C.proto_message_array) (msgs []
 			return nil, err
 		}
 
-		msg, err := SerializedProtoToProtoMessage(serializedProto)
+		msg, err := SerializedProtoToGoProtoMessage(serializedProto)
 		if err != nil {
 			return nil, err
 		}
@@ -57,7 +57,7 @@ func CSerializedProtoToGoSerializedProto(cSerializedProto *C.serialized_proto) (
 }
 
 // TODO_IN_THIS_COMMIT: move & godoc...
-func SerializedProtoToProtoMessage(serializedProto *SerializedProto) (gogoproto.Message, error) {
+func SerializedProtoToGoProtoMessage(serializedProto *SerializedProto) (gogoproto.Message, error) {
 	typeUrl := string(serializedProto.TypeUrl)
 	if !strings.HasPrefix(typeUrl, "/") {
 		typeUrl = "/" + typeUrl
@@ -136,22 +136,23 @@ func CSerializedProtoFromGoProto(value gogoproto.Message) (unsafe.Pointer, error
 }
 
 // TODO_IN_THIS_COMMIT: godoc... caller is responsible for freeing.
-func CProtoMessageArrayFromGoProtoMessages(msgs []gogoproto.Message) (unsafe.Pointer, error) {
+func CSerializedProtoArrayFromGoProtoMessages(msgs []gogoproto.Message) (unsafe.Pointer, error) {
 	// Allocate the main structure
-	protoMessageArray := (*C.proto_message_array)(C.malloc(C.size_t(unsafe.Sizeof(C.proto_message_array{}))))
+	serializedProtoArray := (*C.serialized_proto_array)(C.malloc(C.size_t(unsafe.Sizeof(C.serialized_proto_array{}))))
 
 	// Set the number of messages
-	protoMessageArray.num_messages = C.size_t(len(msgs))
+	serializedProtoArray.num_protos = C.size_t(len(msgs))
 
 	// Allocate array of serialized_proto structures
 	sizeOfSerializedProto := unsafe.Sizeof(C.serialized_proto{})
-	messagesArray := (*C.serialized_proto)(C.malloc(C.size_t(sizeOfSerializedProto) * C.size_t(len(msgs))))
-	protoMessageArray.messages = messagesArray
+	protosArray := (*C.serialized_proto)(C.malloc(C.size_t(sizeOfSerializedProto) * C.size_t(len(msgs))))
+	serializedProtoArray.protos = protosArray
 
 	// Populate each message in the array
 	for i, msg := range msgs {
+		// TODO_NEXT_RELEASE: clean this up...
 		// Calculate pointer to current serialized_proto
-		msgMemAddr := uintptr(unsafe.Pointer(messagesArray))
+		msgMemAddr := uintptr(unsafe.Pointer(protosArray))
 		msgOffset := uintptr(i) * sizeOfSerializedProto
 		currentProto := (*C.serialized_proto)(unsafe.Pointer(msgMemAddr + msgOffset))
 
@@ -170,5 +171,5 @@ func CProtoMessageArrayFromGoProtoMessages(msgs []gogoproto.Message) (unsafe.Poi
 		currentProto.data_length = C.size_t(len(msgBz))
 	}
 
-	return unsafe.Pointer(protoMessageArray), nil
+	return unsafe.Pointer(serializedProtoArray), nil
 }

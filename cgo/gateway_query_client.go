@@ -64,7 +64,7 @@ package main
 //		gatewayPtrs[i] = &gateway
 //	}
 //
-//	cProtoMessages, err := CProtoMessageArrayFromGoProtoMessages(gatewayPtrs)
+//	cProtoMessages, err := CSerializedProtoArrayFromGoProtoMessages(gatewayPtrs)
 //	if err != nil {
 //		*cErr = C.CString(err.Error())
 //		return C.NULL

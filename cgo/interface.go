@@ -5,6 +5,7 @@ import (
 
 	"github.com/pokt-network/poktroll/pkg/client"
 	apptypes "github.com/pokt-network/poktroll/x/application/types"
+	migrationtypes "github.com/pokt-network/poktroll/x/migration/types"
 	prooftypes "github.com/pokt-network/poktroll/x/proof/types"
 	servicetypes "github.com/pokt-network/poktroll/x/service/types"
 	sessiontypes "github.com/pokt-network/poktroll/x/session/types"
@@ -25,6 +26,9 @@ type MultiQueryClient interface {
 	SessionQueryClient
 	ServiceQueryClient
 	ProofQueryClient
+
+	// TODO_NEXT_RELEASE: add a query client wrapper for the migration module.
+	migrationtypes.QueryClient
 
 	// TODO_TECHDEBT(@bryanchriswhite): There's no gateway query client yet. 😅
 	// GatewayQueryClient

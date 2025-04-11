@@ -62,7 +62,7 @@ func QueryClient_GetSupplier(
 //		supplierPtrs[i] = &supplier
 //	}
 //
-//	cProtoMessages, err := CProtoMessageArrayFromGoProtoMessages(supplierPtrs)
+//	cProtoMessages, err := CSerializedProtoArrayFromGoProtoMessages(supplierPtrs)
 //	if err != nil {
 //		*cErr = C.CString(err.Error())
 //		return C.NULL

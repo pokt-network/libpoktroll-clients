@@ -60,7 +60,7 @@ func QueryClient_GetAllApplications(
 		appPtrs[i] = &app
 	}
 
-	cProtoMessages, err := CProtoMessageArrayFromGoProtoMessages(appPtrs)
+	cProtoMessages, err := CSerializedProtoArrayFromGoProtoMessages(appPtrs)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return C.NULL

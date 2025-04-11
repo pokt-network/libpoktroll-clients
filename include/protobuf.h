@@ -14,8 +14,8 @@ typedef struct {
 
 // Structure to hold metadata about the message array.
 typedef struct {
-    serialized_proto* messages;  // Pointer to array of message pointers.
-    size_t num_messages;         // Number of messages in the array.
-} proto_message_array;
+    serialized_proto* protos;  // Pointer to array of message pointers.
+    size_t num_protos;         // Number of messages in the array.
+} serialized_proto_array;
 
 #endif //PROTOBUF_H

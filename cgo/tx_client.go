@@ -205,7 +205,7 @@ func TxClient_SignAndBroadcast(
 func TxClient_SignAndBroadcastMany(
 	op *C.AsyncOperation,
 	txClientRef C.go_ref,
-	protoMessageArray *C.proto_message_array,
+	serializedProtoArray *C.serialized_proto_array,
 ) C.go_ref {
 	goCtx := context.Background()
 
@@ -216,12 +216,12 @@ func TxClient_SignAndBroadcastMany(
 		return C.go_ref(NilGoRef)
 	}
 
-	if protoMessageArray.num_messages == 0 {
+	if serializedProtoArray.num_protos == 0 {
 		C.bridge_error(op, C.CString("no messages provided"))
 		return C.go_ref(NilGoRef)
 	}
 
-	msgs, err := CProtoMessageArrayToGoProtoMessages(protoMessageArray)
+	msgs, err := CSerializedProtoArrayToGoProtoMessages(serializedProtoArray)
 	if err != nil {
 		err = fmt.Errorf("converting C proto messages to Go: %s", err)
 		C.bridge_error(op, C.CString(err.Error()))
