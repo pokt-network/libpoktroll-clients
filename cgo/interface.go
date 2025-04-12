@@ -29,6 +29,7 @@ type MultiQueryClient interface {
 
 	// TODO_NEXT_RELEASE: add a query client wrapper for the migration module.
 	migrationtypes.QueryClient
+	GetAllSuppliers(ctx context.Context) ([]*sharedtypes.Supplier, error)
 
 	// TODO_TECHDEBT(@bryanchriswhite): There's no gateway query client yet. 😅
 	// GatewayQueryClient

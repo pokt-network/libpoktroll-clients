@@ -7,6 +7,8 @@ import "C"
 import (
 	"context"
 	"unsafe"
+
+	gogoproto "github.com/cosmos/gogoproto/proto"
 )
 
 // TODO_IN_THIS_COMMIT: godoc...
@@ -38,35 +40,36 @@ func QueryClient_GetSupplier(
 	return cSerializedProto
 }
 
-//// TODO_IN_THIS_COMMIT: godoc...
-////
-////export QueryClient_GetAllSuppliers
-//func QueryClient_GetAllSuppliers(
-//	clientRef C.go_ref,
-//	cErr **C.char,
-//) unsafe.Pointer {
-//	multiClient, err := GetGoMem[MultiQueryClient](clientRef)
-//	if err != nil {
-//		*cErr = C.CString(err.Error())
-//		return C.NULL
-//	}
+// TODO_IN_THIS_COMMIT: godoc...
 //
-//	suppliers, err := multiClient.GetAllSuppliers(context.TODO())
-//	if err != nil {
-//		*cErr = C.CString(err.Error())
-//		return C.NULL
-//	}
-//
-//	supplierPtrs := make([]gogoproto.Message, len(suppliers))
-//	for i, supplier := range suppliers {
-//		supplierPtrs[i] = &supplier
-//	}
-//
-//	cProtoMessages, err := CSerializedProtoArrayFromGoProtoMessages(supplierPtrs)
-//	if err != nil {
-//		*cErr = C.CString(err.Error())
-//		return C.NULL
-//	}
-//
-//	return cProtoMessages
-//}
+//export QueryClient_GetAllSuppliers
+func QueryClient_GetAllSuppliers(
+	clientRef C.go_ref,
+	cErr **C.char,
+) unsafe.Pointer {
+	multiClient, err := GetGoMem[MultiQueryClient](clientRef)
+	if err != nil {
+		*cErr = C.CString(err.Error())
+		return C.NULL
+	}
+
+	ctx := context.Background()
+	suppliers, err := multiClient.GetAllSuppliers(ctx)
+	if err != nil {
+		*cErr = C.CString(err.Error())
+		return C.NULL
+	}
+
+	supplierProtos := make([]gogoproto.Message, len(suppliers))
+	for i, supplier := range suppliers {
+		supplierProtos[i] = supplier
+	}
+
+	cProtoMessages, err := CSerializedProtoArrayFromGoProtoMessages(supplierProtos)
+	if err != nil {
+		*cErr = C.CString(err.Error())
+		return C.NULL
+	}
+
+	return cProtoMessages
+}

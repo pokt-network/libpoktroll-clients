@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"math"
 
 	"cosmossdk.io/depinject"
 	cosmosclient "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	cosmostypes "github.com/cosmos/cosmos-sdk/types"
+	cosmosquery "github.com/cosmos/cosmos-sdk/types/query"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/gogoproto/grpc"
 	"github.com/pokt-network/poktroll/app"
 	"github.com/pokt-network/poktroll/pkg/cache/memory"
 	"github.com/pokt-network/poktroll/pkg/client"
@@ -202,6 +205,7 @@ func NewMultiQueryClient(deps depinject.Config, queryNodeRPCURL string) (MultiQu
 
 	// TODO_OPTIMIZE: lazily initialize these, so that they're only constructed when needed.
 	return &queryClient{
+		clientCtx:              clientCtx,
 		AccountQueryClient:     accountQuerier,
 		BankQueryClient:        bankQuerier,
 		BlockQueryClient:       blockQuerier,
@@ -217,6 +221,8 @@ func NewMultiQueryClient(deps depinject.Config, queryNodeRPCURL string) (MultiQu
 
 // queryClient composes all pocket module query clients.
 type queryClient struct {
+	clientCtx grpc.ClientConn
+
 	client.AccountQueryClient
 	client.BankQueryClient
 	client.BlockQueryClient
@@ -262,3 +268,25 @@ func (qc *queryClient) GetApplicationParams(ctx context.Context) (*apptypes.Para
 }
 
 */
+
+// TODO_NEXT_RELEASE: promote to pocket client pkg.
+func (qc *queryClient) GetAllSuppliers(ctx context.Context) ([]*sharedtypes.Supplier, error) {
+	supplierQueryClient := suppliertypes.NewQueryClient(qc.clientCtx)
+	queryAllSuppliersRes, err := supplierQueryClient.AllSuppliers(
+		ctx, &suppliertypes.QueryAllSuppliersRequest{
+			Pagination: &cosmosquery.PageRequest{
+				// TODO_NEXT_RELEASE: Extend the pagination API to C.
+				Limit: math.MaxInt,
+			},
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	supplierProtoMsgs := make([]*sharedtypes.Supplier, len(queryAllSuppliersRes.GetSupplier()))
+	for i, supplierProtoMsg := range queryAllSuppliersRes.GetSupplier() {
+		supplierProtoMsgs[i] = &supplierProtoMsg
+	}
+	return supplierProtoMsgs, nil
+}
