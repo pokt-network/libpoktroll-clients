@@ -104,6 +104,7 @@ func NewSerializedSignedMsgClaimMorseApplication(
 func NewSerializedSignedMsgClaimMorseSupplier(
 	cShannonOwnerAddr *C.char,
 	cShannonOperatorAddr *C.char,
+	cMorseNodeAddr *C.char,
 	privKeyRef C.go_ref,
 	cSupplierServiceConfigs *C.serialized_proto_array,
 	cShannonSigningAddr *C.char,
@@ -137,6 +138,7 @@ func NewSerializedSignedMsgClaimMorseSupplier(
 	msg, err := migrationtypes.NewMsgClaimMorseSupplier(
 		C.GoString(cShannonOwnerAddr),
 		C.GoString(cShannonOperatorAddr),
+		C.GoString(cMorseNodeAddr),
 		morsePrivKey,
 		supplierServiceConfigs,
 		C.GoString(cShannonSigningAddr),

@@ -18,4 +18,4 @@ liblibpoktroll_clients.so
 libpoktroll_clients_tests
 
 # Generated files
-gen/
+gen/cgo/libpoktroll-clients

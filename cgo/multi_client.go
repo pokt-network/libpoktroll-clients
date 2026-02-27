@@ -253,6 +253,16 @@ func (qc *queryClient) GetProofParams(ctx context.Context) (*prooftypes.Params, 
 	return params.(*prooftypes.Params), err
 }
 
+// GetComputeUnitsToTokensMultiplier returns the multiplier used to convert compute units to tokens.
+func (qc *queryClient) GetComputeUnitsToTokensMultiplier(ctx context.Context) (uint64, error) {
+	sharedParams, err := qc.SharedQueryClient.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	return sharedParams.GetComputeUnitsToTokensMultiplier(), nil
+}
+
 /* TODO_BLOCKED(@bryanchriswhite, #543): uncomment & implement once dependencies are available.
 
 func (qc *queryClient) GetSupplierParams(ctx context.Context) (*suppliertypes.Params, error) {

@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/depinject"
 
 	"github.com/pokt-network/poktroll/pkg/client/block"
+	"github.com/pokt-network/poktroll/pkg/polylog/polyzero"
 )
 
 /*
@@ -26,7 +27,11 @@ func NewBlockClient(depsRef C.go_ref, cErr **C.char) C.go_ref {
 		return C.go_ref(NilGoRef)
 	}
 
-	blockClient, err := block.NewBlockClient(ctx, deps)
+	// Supply a logger; BlockClient needs polylog.Logger in deps since v0.1.23.
+	logger := polyzero.NewLogger()
+	fullDeps := depinject.Configs(deps, depinject.Supply(logger))
+
+	blockClient, err := block.NewBlockClient(ctx, fullDeps)
 	if err != nil {
 		*cErr = C.CString(err.Error())
 		return C.go_ref(NilGoRef)

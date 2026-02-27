@@ -47,6 +47,7 @@ import (
 	cosmostypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pokt-network/poktroll/pkg/client"
 	"github.com/pokt-network/poktroll/pkg/client/tx"
+	"github.com/pokt-network/poktroll/pkg/polylog/polyzero"
 )
 
 // TODO_IMPROVE: add separate constructor which supports options...
@@ -71,6 +72,10 @@ func NewTxClient(
 		*cErr = C.CString(err.Error())
 		return C.go_ref(NilGoRef)
 	}
+
+	// Supply a logger; TxClient needs polylog.Logger in deps since v0.1.23.
+	logger := polyzero.NewLogger()
+	deps = depinject.Configs(deps, depinject.Supply(logger))
 
 	gasAndFeesOpts, err := getTxClientGasAndFeesOptions(gasSetting)
 	if err != nil {
@@ -182,14 +187,14 @@ func TxClient_SignAndBroadcast(
 
 	// TODO_IN_THIS_COMMIT: add a TxResponse data structure and return it...
 	_, eitherAsyncErr := txClient.SignAndBroadcast(goCtx, msg)
-	err, errCh := eitherAsyncErr.SyncOrAsyncError()
+	errCh, err := eitherAsyncErr.SyncOrAsyncError()
 	if err != nil {
 		C.bridge_error(op, C.CString(err.Error()))
 		return C.go_ref(NilGoRef)
 	}
 
 	go func() {
-		if err = <-errCh; err != nil {
+		if err := <-errCh; err != nil {
 			C.bridge_error(op, C.CString(err.Error()))
 		} else {
 			C.bridge_success(op, nil)
@@ -230,14 +235,14 @@ func TxClient_SignAndBroadcastMany(
 
 	// TODO_IN_THIS_COMMIT: add a TxResponse data structure and return it...
 	_, eitherAsyncErr := txClient.SignAndBroadcast(goCtx, msgs...)
-	err, errCh := eitherAsyncErr.SyncOrAsyncError()
+	errCh, err := eitherAsyncErr.SyncOrAsyncError()
 	if err != nil {
 		C.bridge_error(op, C.CString(err.Error()))
 		return C.go_ref(NilGoRef)
 	}
 
 	go func() {
-		if err = <-errCh; err != nil {
+		if err := <-errCh; err != nil {
 			C.bridge_error(op, C.CString(err.Error()))
 		} else {
 			C.bridge_success(op, nil)
