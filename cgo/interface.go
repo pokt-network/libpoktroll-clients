@@ -38,6 +38,11 @@ type MultiQueryClient interface {
 	GetSessionParams(ctx context.Context) (*sessiontypes.Params, error)
 	GetProofParams(ctx context.Context) (*prooftypes.Params, error)
 
+	// Accessors for embedded query clients (used by ring client construction).
+	GetAccountQueryClient() client.AccountQueryClient
+	GetApplicationQueryClient() client.ApplicationQueryClient
+	GetSharedQueryClient() client.SharedQueryClient
+
 	// TODO_BLOCKED(@bryanchriswhite poktroll#543): add once available.
 	//GetApplicationParams(ctx context.Context) (*apptypes.Params, error)
 	//GetSupplierParams(ctx context.Context) (*sharedtypes.Params, error)

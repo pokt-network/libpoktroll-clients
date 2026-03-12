@@ -237,6 +237,21 @@ type queryClient struct {
 	migrationtypes.QueryClient
 }
 
+// GetAccountQueryClient returns the embedded AccountQueryClient.
+func (qc *queryClient) GetAccountQueryClient() client.AccountQueryClient {
+	return qc.AccountQueryClient
+}
+
+// GetApplicationQueryClient returns the embedded ApplicationQueryClient.
+func (qc *queryClient) GetApplicationQueryClient() client.ApplicationQueryClient {
+	return qc.ApplicationQueryClient
+}
+
+// GetSharedQueryClient returns the embedded SharedQueryClient.
+func (qc *queryClient) GetSharedQueryClient() client.SharedQueryClient {
+	return qc.SharedQueryClient
+}
+
 // GetSharedParams queries the chain for the current shared module parameters.
 func (qc *queryClient) GetSharedParams(ctx context.Context) (*sharedtypes.Params, error) {
 	return qc.SharedQueryClient.GetParams(ctx)
