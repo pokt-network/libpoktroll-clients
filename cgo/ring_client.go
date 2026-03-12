@@ -4,6 +4,7 @@ package main
 #cgo CFLAGS: -I${SRCDIR}/../include
 #include <memory.h>
 #include <protobuf.h>
+#include <stdlib.h>
 */
 import "C"
 import (
@@ -165,4 +166,14 @@ func RingClient_SignRelayRequest(
 
 	*cOutSigBz = (*C.uint8_t)(cSigBz)
 	*cOutSigBzLen = C.size_t(sigLen)
+}
+
+// FreeCBytes frees memory that was allocated via C.malloc (e.g., signature output
+// from RingClient_SignRelayRequest). Callers MUST call this to avoid memory leaks.
+//
+//export FreeCBytes
+func FreeCBytes(cBz *C.uint8_t) {
+	if cBz != nil {
+		C.free(unsafe.Pointer(cBz))
+	}
 }

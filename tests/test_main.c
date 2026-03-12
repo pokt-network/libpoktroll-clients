@@ -459,6 +459,84 @@ static void test_sign_and_broadcast_async_error(void)
     free(err);
 }
 
+// Helper to construct a QueryClient for ring client tests.
+static go_ref getQueryClient(char** err)
+{
+    const go_ref blockQueryClientRef = NewBlockQueryClient("http://127.0.0.1:26657", err);
+    TEST_ASSERT_EQUAL_STRING("", *err);
+    TEST_ASSERT_NOT_EQUAL_INT64(blockQueryClientRef, -1);
+    TEST_ASSERT_NOT_EQUAL_INT64(blockQueryClientRef, 0);
+
+    go_ref* toSupply = calloc(1, sizeof(go_ref));
+    toSupply[0] = blockQueryClientRef;
+    const go_ref supplyCfgRef = SupplyMany(toSupply, 1, err);
+    TEST_ASSERT_EQUAL_STRING("", *err);
+
+    const go_ref queryClientRef = NewQueryClient(supplyCfgRef, "tcp://127.0.0.1:9090", err);
+    TEST_ASSERT_EQUAL_STRING("", *err);
+    TEST_ASSERT_NOT_EQUAL_INT64(queryClientRef, -1);
+    TEST_ASSERT_NOT_EQUAL_INT64(queryClientRef, 0);
+
+    free(toSupply);
+    FreeGoMem(supplyCfgRef);
+    // Note: blockQueryClientRef ownership transferred to queryClient via depinject.
+
+    return queryClientRef;
+}
+
+static void test_ring_client_new(void)
+{
+    char* err = calloc(1024, sizeof(char));
+
+    const go_ref queryClientRef = getQueryClient(&err);
+    TEST_ASSERT_EQUAL_STRING("", err);
+
+    const go_ref ringClientRef = NewRingClient(queryClientRef, &err);
+    TEST_ASSERT_EQUAL_STRING("", err);
+    TEST_ASSERT_NOT_EQUAL_INT64(ringClientRef, -1);
+    TEST_ASSERT_NOT_EQUAL_INT64(ringClientRef, 0);
+
+    FreeGoMem(ringClientRef);
+    FreeGoMem(queryClientRef);
+    free(err);
+}
+
+static void test_ring_client_sign_invalid_request(void)
+{
+    char* err = calloc(1024, sizeof(char));
+
+    const go_ref queryClientRef = getQueryClient(&err);
+    TEST_ASSERT_EQUAL_STRING("", err);
+
+    const go_ref ringClientRef = NewRingClient(queryClientRef, &err);
+    TEST_ASSERT_EQUAL_STRING("", err);
+
+    // Attempt to sign with garbage relay request bytes — should return an error.
+    uint8_t fakePrivKey[32] = {0};
+    uint8_t fakeRelayRequest[] = {0xFF, 0xFF, 0xFF};
+    uint8_t* outSigBz = NULL;
+    size_t outSigLen = 0;
+
+    // Reset err to empty before the call.
+    memset(err, 0, 1024);
+    RingClient_SignRelayRequest(
+        ringClientRef,
+        fakePrivKey, 32,
+        fakeRelayRequest, 3,
+        &outSigBz, &outSigLen,
+        &err
+    );
+
+    // Should have an error (invalid protobuf).
+    TEST_ASSERT_NOT_EQUAL_STRING("", err);
+    TEST_ASSERT_NULL(outSigBz);
+    TEST_ASSERT_EQUAL_INT(0, outSigLen);
+
+    FreeGoMem(ringClientRef);
+    FreeGoMem(queryClientRef);
+    free(err);
+}
+
 void setUp(void)
 {
     // Code to run before each test (if any)
@@ -482,5 +560,7 @@ int main(void)
     RUN_TEST(test_sign_and_broadcast_sync_error);
     RUN_TEST(test_sign_and_broadcast_success);
     RUN_TEST(test_sign_and_broadcast_async_error);
+    RUN_TEST(test_ring_client_new);
+    RUN_TEST(test_ring_client_sign_invalid_request);
     return UNITY_END(); // End Unity and report results
 }
